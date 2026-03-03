@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 
 const navLinks = [
@@ -16,11 +16,38 @@ const navLinks = [
 export function Navigation() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const isHome = pathname === "/";
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 80);
+    };
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // On the homepage, navigation is transparent until scrolled
+  const isTransparent = isHome && !scrolled && !mobileOpen;
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-sm">
+    <header
+      className={cn(
+        "fixed top-0 left-0 right-0 z-50 transition-all duration-500",
+        isTransparent
+          ? "bg-transparent"
+          : "bg-background/95 backdrop-blur-sm border-b border-border/50"
+      )}
+    >
       <nav className="mx-auto flex max-w-[1400px] items-center justify-between px-6 py-5 lg:px-12">
-        <Link href="/" className="font-serif text-lg tracking-tight text-foreground">
+        <Link
+          href="/"
+          className={cn(
+            "font-serif text-lg tracking-tight transition-colors duration-500",
+            isTransparent ? "text-cream" : "text-foreground"
+          )}
+        >
           SAS
         </Link>
 
@@ -32,9 +59,13 @@ export function Navigation() {
                 href={link.href}
                 className={cn(
                   "text-[11px] font-medium uppercase tracking-[0.15em] transition-colors duration-300",
-                  pathname === link.href
-                    ? "text-foreground"
-                    : "text-muted-foreground hover:text-foreground"
+                  isTransparent
+                    ? pathname === link.href
+                      ? "text-cream"
+                      : "text-cream/60 hover:text-cream"
+                    : pathname === link.href
+                      ? "text-foreground"
+                      : "text-muted-foreground hover:text-foreground"
                 )}
               >
                 {link.label}
@@ -51,13 +82,15 @@ export function Navigation() {
         >
           <span
             className={cn(
-              "block h-px w-6 bg-foreground transition-transform duration-300",
+              "block h-px w-6 transition-all duration-300",
+              isTransparent ? "bg-cream" : "bg-foreground",
               mobileOpen && "translate-y-[3.5px] rotate-45"
             )}
           />
           <span
             className={cn(
-              "block h-px w-6 bg-foreground transition-transform duration-300",
+              "block h-px w-6 transition-all duration-300",
+              isTransparent ? "bg-cream" : "bg-foreground",
               mobileOpen && "-translate-y-[3.5px] -rotate-45"
             )}
           />
@@ -67,7 +100,8 @@ export function Navigation() {
       {/* Mobile menu */}
       <div
         className={cn(
-          "overflow-hidden bg-background transition-all duration-500 ease-in-out md:hidden",
+          "overflow-hidden transition-all duration-500 ease-in-out md:hidden",
+          isTransparent ? "bg-charcoal/90 backdrop-blur-sm" : "bg-background",
           mobileOpen ? "max-h-80 opacity-100" : "max-h-0 opacity-0"
         )}
       >
@@ -79,9 +113,13 @@ export function Navigation() {
                 onClick={() => setMobileOpen(false)}
                 className={cn(
                   "text-[11px] font-medium uppercase tracking-[0.15em] transition-colors duration-300",
-                  pathname === link.href
-                    ? "text-foreground"
-                    : "text-muted-foreground hover:text-foreground"
+                  isTransparent
+                    ? pathname === link.href
+                      ? "text-cream"
+                      : "text-cream/60 hover:text-cream"
+                    : pathname === link.href
+                      ? "text-foreground"
+                      : "text-muted-foreground hover:text-foreground"
                 )}
               >
                 {link.label}

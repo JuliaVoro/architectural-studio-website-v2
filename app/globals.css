@@ -1,0 +1,104 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* Warm off-white background */
+  --background: #F4F2EF;
+  --foreground: #1C1C1C;
+
+  --card: #EDEAE5;
+  --card-foreground: #1C1C1C;
+
+  --popover: #F4F2EF;
+  --popover-foreground: #1C1C1C;
+
+  /* Deep olive accent */
+  --primary: #4A5A43;
+  --primary-foreground: #F4F2EF;
+
+  --secondary: #EDEAE5;
+  --secondary-foreground: #1C1C1C;
+
+  --muted: #EDEAE5;
+  --muted-foreground: #7A7A7A;
+
+  --accent: #4A5A43;
+  --accent-foreground: #F4F2EF;
+
+  --destructive: #8B3A3A;
+  --destructive-foreground: #F4F2EF;
+
+  --border: #D8D4CE;
+  --input: #D8D4CE;
+  --ring: #4A5A43;
+
+  --radius: 0.125rem;
+}
+
+@theme inline {
+  --font-sans: var(--font-inter), 'Inter', system-ui, sans-serif;
+  --font-serif: var(--font-playfair), 'Playfair Display', 'Georgia', serif;
+  --font-mono: 'Geist Mono', 'Geist Mono Fallback', monospace;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--primary);
+  --color-chart-2: var(--muted-foreground);
+  --color-chart-3: var(--foreground);
+  --color-chart-4: var(--border);
+  --color-chart-5: var(--card);
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 2px);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-olive: #4A5A43;
+  --color-warm-grey: #7A7A7A;
+  --color-charcoal: #1C1C1C;
+  --color-cream: #F4F2EF;
+  --color-sand: #EDEAE5;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Custom utilities */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* Smooth scroll */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Selection color */
+::selection {
+  background-color: #4A5A43;
+  color: #F4F2EF;
+}

@@ -1,0 +1,19 @@
+import { Hero } from "@/components/home/hero";
+import { TheShift } from "@/components/home/the-shift";
+import { SystemModel } from "@/components/home/system-model";
+import { SelectedSystems } from "@/components/home/selected-systems";
+import { Outcomes } from "@/components/home/outcomes";
+import { Philosophy } from "@/components/home/philosophy";
+
+export default function HomePage() {
+  return (
+    <>
+      <Hero />
+      <TheShift />
+      <SystemModel />
+      <SelectedSystems />
+      <Outcomes />
+      <Philosophy />
+    </>
+  );
+}

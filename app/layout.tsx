@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
-import { Analytics } from "@vercel/analytics/next";
 import { Navigation } from "@/components/navigation";
 import { Footer } from "@/components/footer";
 import "./globals.css";
@@ -39,7 +38,6 @@ export default function RootLayout({
         <Navigation />
         <main>{children}</main>
         <Footer />
-        <Analytics />
       </body>
     </html>
   );

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Image from "next/image";
+import { InteractiveGeometry } from "./interactive-geometry";
 
 export function Hero() {
   return (
@@ -37,18 +37,9 @@ export function Hero() {
             </div>
           </div>
 
-          {/* Right column - Image */}
+          {/* Right column - Interactive Geometry */}
           <div className="lg:col-span-5">
-            <div className="relative aspect-[4/5] w-full overflow-hidden">
-              <Image
-                src="/images/hero-architecture.jpg"
-                alt="Architectural interior with dramatic light and shadow"
-                fill
-                className="object-cover"
-                priority
-                sizes="(max-width: 1024px) 100vw, 42vw"
-              />
-            </div>
+            <InteractiveGeometry />
           </div>
         </div>
       </div>

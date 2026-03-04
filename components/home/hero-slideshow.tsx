@@ -5,33 +5,55 @@ import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
-const slides = [
+import { useRef } from "react";
+
+type Slide = {
+  type: "image" | "video";
+  src: string;
+  title: string;
+  subtitle: string;
+  location: string;
+};
+
+const slides: Slide[] = [
   {
-    image: "/images/slide-lobby.jpg",
+    type: "video",
+    src: "/videos/bude-plus.mp4",
+    title: "Bude Plus",
+    subtitle: "Retail",
+    location: "Tbilisi, Georgia",
+  },
+  {
+    type: "image",
+    src: "/images/slide-lobby.jpg",
     title: "Gran Palazzo",
     subtitle: "Hospitality",
     location: "Milan, Italy",
   },
   {
-    image: "/images/slide-retail.jpg",
+    type: "image",
+    src: "/images/slide-retail.jpg",
     title: "Forma Showroom",
     subtitle: "Retail",
     location: "Berlin, Germany",
   },
   {
-    image: "/images/slide-workspace.jpg",
+    type: "image",
+    src: "/images/slide-workspace.jpg",
     title: "Atelier Collectif",
     subtitle: "Workspace",
     location: "Amsterdam, Netherlands",
   },
   {
-    image: "/images/slide-facade.jpg",
+    type: "image",
+    src: "/images/slide-facade.jpg",
     title: "Casa Luce",
     subtitle: "Residential",
     location: "Lisbon, Portugal",
   },
   {
-    image: "/images/slide-corridor.jpg",
+    type: "image",
+    src: "/images/slide-corridor.jpg",
     title: "Passage Noir",
     subtitle: "Cultural",
     location: "Paris, France",
@@ -44,8 +66,11 @@ export function HeroSlideshow() {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [progress, setProgress] = useState(0);
   const [isHovering, setIsHovering] = useState(false);
+  const videoRefs = useRef<Map<number, HTMLVideoElement>>(new Map());
 
-  const DURATION = 5000; // 5 seconds per slide
+  const DURATION_IMAGE = 5000;
+  const DURATION_VIDEO = 8000; // longer for video slides
+  const currentDuration = slides[current].type === "video" ? DURATION_VIDEO : DURATION_IMAGE;
   const TRANSITION_MS = 1200;
 
   const goToSlide = useCallback(
@@ -55,6 +80,18 @@ export function HeroSlideshow() {
       setPrevious(current);
       setCurrent(index);
       setProgress(0);
+
+      // Pause old video, play new video
+      const oldVideo = videoRefs.current.get(current);
+      if (oldVideo) {
+        oldVideo.pause();
+      }
+      const newVideo = videoRefs.current.get(index);
+      if (newVideo) {
+        newVideo.currentTime = 0;
+        newVideo.play().catch(() => {});
+      }
+
       setTimeout(() => {
         setIsTransitioning(false);
         setPrevious(-1);
@@ -78,12 +115,22 @@ export function HeroSlideshow() {
           nextSlide();
           return 0;
         }
-        return prev + 100 / (DURATION / 50);
+        return prev + 100 / (currentDuration / 50);
       });
     }, 50);
 
     return () => clearInterval(interval);
-  }, [isTransitioning, isHovering, nextSlide]);
+  }, [isTransitioning, isHovering, nextSlide, currentDuration]);
+
+  // Play the first video on mount
+  useEffect(() => {
+    if (slides[0].type === "video") {
+      const video = videoRefs.current.get(0);
+      if (video) {
+        video.play().catch(() => {});
+      }
+    }
+  }, []);
 
   return (
     <section
@@ -117,19 +164,34 @@ export function HeroSlideshow() {
               <div
                 className="absolute inset-0"
                 style={{
-                  animation: isActive
-                    ? `kenBurns ${DURATION + TRANSITION_MS}ms ease-out forwards`
-                    : "none",
+                  animation:
+                    isActive && slide.type === "image"
+                      ? `kenBurns ${DURATION_IMAGE + TRANSITION_MS}ms ease-out forwards`
+                      : "none",
                 }}
               >
-                <Image
-                  src={slide.image}
-                  alt={`${slide.title} - ${slide.subtitle} project in ${slide.location}`}
-                  fill
-                  className="object-cover"
-                  priority={index < 2}
-                  sizes="100vw"
-                />
+                {slide.type === "video" ? (
+                  <video
+                    ref={(el) => {
+                      if (el) videoRefs.current.set(index, el);
+                    }}
+                    src={slide.src}
+                    muted
+                    loop
+                    playsInline
+                    className="absolute inset-0 h-full w-full object-cover"
+                    aria-label={`${slide.title} - ${slide.subtitle} project in ${slide.location}`}
+                  />
+                ) : (
+                  <Image
+                    src={slide.src}
+                    alt={`${slide.title} - ${slide.subtitle} project in ${slide.location}`}
+                    fill
+                    className="object-cover"
+                    priority={index < 2}
+                    sizes="100vw"
+                  />
+                )}
               </div>
             )}
           </div>

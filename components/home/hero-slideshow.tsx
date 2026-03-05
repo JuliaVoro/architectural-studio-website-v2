@@ -18,7 +18,7 @@ type Slide = {
 const slides: Slide[] = [
   {
     type: "video",
-    src: "https://makgbcplbjjmrvrn.public.blob.vercel-storage.com/header-videos/office-termoindustria.mp4",
+    src: "https://makgbcplbjjmrvrn.public.blob.vercel-storage.com/header-videos/office-termoindustria-v2.mp4",
     title: "Office Termoindustria",
     subtitle: "Office",
     location: "Tbilisi, Georgia",

@@ -75,9 +75,7 @@ export function HeroSlideshow() {
   const [isHovering, setIsHovering] = useState(false);
   const videoRefs = useRef<Map<number, HTMLVideoElement>>(new Map());
 
-  const DURATION_IMAGE = 3000;
-  const DURATION_VIDEO = 3000; // same as images - 3 seconds
-  const currentDuration = slides[current].type === "video" ? DURATION_VIDEO : DURATION_IMAGE;
+  const SLIDE_DURATION = 3000; // 3 seconds per slide
   const TRANSITION_MS = 1200;
 
   const goToSlide = useCallback(
@@ -112,22 +110,25 @@ export function HeroSlideshow() {
     goToSlide(next);
   }, [current, goToSlide]);
 
-  // Auto-advance timer
+  // Auto-advance timer using refs to avoid stale closures
+  const nextSlideRef = useRef(nextSlide);
+  nextSlideRef.current = nextSlide;
+
   useEffect(() => {
     if (isTransitioning || isHovering) return;
 
     const interval = setInterval(() => {
       setProgress((prev) => {
         if (prev >= 100) {
-          nextSlide();
+          nextSlideRef.current();
           return 0;
         }
-        return prev + 100 / (currentDuration / 50);
+        return prev + 100 / (SLIDE_DURATION / 50);
       });
     }, 50);
 
     return () => clearInterval(interval);
-  }, [isTransitioning, isHovering, nextSlide, currentDuration]);
+  }, [isTransitioning, isHovering]);
 
   // Play the first video on mount
   useEffect(() => {
@@ -172,7 +173,7 @@ export function HeroSlideshow() {
                 style={{
                   animation:
                     isActive && slide.type === "image"
-                      ? `kenBurns ${DURATION_IMAGE + TRANSITION_MS}ms ease-out forwards`
+                      ? `kenBurns ${SLIDE_DURATION + TRANSITION_MS}ms ease-out forwards`
                       : "none",
                 }}
               >
@@ -183,7 +184,6 @@ export function HeroSlideshow() {
                     }}
                     src={slide.src}
                     muted
-                    loop
                     playsInline
                     preload="auto"
                     className="absolute inset-0 h-full w-full object-cover"

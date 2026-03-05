@@ -11,10 +11,9 @@ async function uploadVideo() {
   
   console.log("Uploading to Vercel Blob...");
   
-  const result = await put("header-videos/office-termoindustria.mp4", blob, {
+  const result = await put("header-videos/office-termoindustria-v2.mp4", blob, {
     access: "public",
     contentType: "video/mp4",
-    allowOverwrite: true,
   });
   
   console.log("Upload complete!");

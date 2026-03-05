@@ -75,8 +75,8 @@ export function HeroSlideshow() {
   const [isHovering, setIsHovering] = useState(false);
   const videoRefs = useRef<Map<number, HTMLVideoElement>>(new Map());
 
-  const DURATION_IMAGE = 5000;
-  const DURATION_VIDEO = 5000; // same as images - 5 seconds
+  const DURATION_IMAGE = 3000;
+  const DURATION_VIDEO = 3000; // same as images - 3 seconds
   const currentDuration = slides[current].type === "video" ? DURATION_VIDEO : DURATION_IMAGE;
   const TRANSITION_MS = 1200;
 
@@ -93,13 +93,10 @@ export function HeroSlideshow() {
       if (oldVideo) {
         oldVideo.pause();
       }
-      console.log("[v0] Switching to slide", index, "video refs:", Array.from(videoRefs.current.keys()));
       const newVideo = videoRefs.current.get(index);
       if (newVideo) {
         newVideo.currentTime = 0;
-        newVideo.play().catch((err) => console.log("[v0] Play error:", err));
-      } else {
-        console.log("[v0] No video ref found for slide", index);
+        newVideo.play().catch(() => {});
       }
 
       setTimeout(() => {

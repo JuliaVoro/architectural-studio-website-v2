@@ -76,7 +76,7 @@ export function HeroSlideshow() {
   const videoRefs = useRef<Map<number, HTMLVideoElement>>(new Map());
 
   const DURATION_IMAGE = 5000;
-  const DURATION_VIDEO = 8000; // longer for video slides
+  const DURATION_VIDEO = 5000; // same as images - 5 seconds
   const currentDuration = slides[current].type === "video" ? DURATION_VIDEO : DURATION_IMAGE;
   const TRANSITION_MS = 1200;
 

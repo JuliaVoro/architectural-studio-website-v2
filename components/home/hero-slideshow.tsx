@@ -199,7 +199,7 @@ export function HeroSlideshow() {
       })}
 
       {/* Dark overlay for text readability */}
-      <div className="absolute inset-0 z-30 bg-charcoal/55" />
+      <div className="absolute inset-0 z-30 bg-charcoal/70" />
 
       {/* Bottom content overlay */}
       <div className="absolute inset-0 z-40 flex flex-col justify-end">

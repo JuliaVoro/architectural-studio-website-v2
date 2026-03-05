@@ -25,7 +25,7 @@ const slides: Slide[] = [
   },
   {
     type: "video",
-    src: "https://makgbcplbjjmrvrn.public.blob.vercel-storage.com/header-videos/sequence-01.mp4",
+    src: "https://makgbcplbjjmrvrn.public.blob.vercel-storage.com/header-videos/bude_building.mp4",
     title: "Bude Plus",
     subtitle: "Retail",
     location: "Tbilisi, Georgia",

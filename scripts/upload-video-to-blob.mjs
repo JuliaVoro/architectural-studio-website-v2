@@ -3,7 +3,7 @@ import { readFileSync } from "fs";
 import { join } from "path";
 
 async function uploadVideo() {
-  const videoPath = join(process.cwd(), "public/videos/bude-plus.mp4");
+  const videoPath = join(process.cwd(), "public/videos/sequence-01.mp4");
   
   console.log("Reading video file from:", videoPath);
   
@@ -12,7 +12,7 @@ async function uploadVideo() {
   
   console.log("Uploading to Vercel Blob...");
   
-  const result = await put("header-videos/bude-plus.mp4", blob, {
+  const result = await put("header-videos/sequence-01.mp4", blob, {
     access: "public",
     contentType: "video/mp4",
   });

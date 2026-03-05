@@ -207,6 +207,9 @@ export function HeroSlideshow() {
 
       
 
+      {/* Bottom gradient for text readability */}
+      <div className="absolute inset-x-0 bottom-0 z-30 h-[50%] bg-gradient-to-t from-charcoal/70 via-charcoal/30 to-transparent" />
+
       {/* Bottom content overlay */}
       <div className="absolute inset-0 z-40 flex flex-col justify-end">
         <div className="mx-auto w-full max-w-[1400px] px-6 pb-12 lg:px-12 lg:pb-16">
@@ -229,6 +232,7 @@ export function HeroSlideshow() {
                 style={{
                   animation: "fadeSlideUp 800ms cubic-bezier(0.16, 1, 0.3, 1) 100ms forwards",
                   opacity: 0,
+                  textShadow: "0 2px 20px rgba(0,0,0,0.4)",
                 }}
               >
                 {slides[current].title}

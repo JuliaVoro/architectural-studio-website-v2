@@ -14,6 +14,7 @@ async function uploadVideo() {
   const result = await put("header-videos/office-termoindustria.mp4", blob, {
     access: "public",
     contentType: "video/mp4",
+    allowOverwrite: true,
   });
   
   console.log("Upload complete!");

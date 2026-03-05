@@ -131,12 +131,10 @@ export function HeroSlideshow() {
 
   // Play the first video on mount
   useEffect(() => {
-    console.log("[v0] First slide:", slides[0].title, slides[0].src);
     if (slides[0].type === "video") {
       const video = videoRefs.current.get(0);
       if (video) {
-        console.log("[v0] Playing first video:", video.src);
-        video.play().catch((err) => console.log("[v0] Video play error:", err));
+        video.play().catch(() => {});
       }
     }
   }, []);

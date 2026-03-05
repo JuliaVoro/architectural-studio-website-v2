@@ -18,7 +18,7 @@ type Slide = {
 const slides: Slide[] = [
   {
     type: "video",
-    src: "/videos/bude-plus.mp4",
+    src: "https://makgbcplbjjmrvrn.public.blob.vercel-storage.com/header-videos/sequence-01.mp4",
     title: "Bude Plus",
     subtitle: "Retail",
     location: "Tbilisi, Georgia",

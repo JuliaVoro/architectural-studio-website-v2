@@ -1,14 +1,13 @@
 const { put } = require("@vercel/blob");
-const { readFileSync } = require("fs");
-const { join } = require("path");
 
 async function uploadVideo() {
-  const videoPath = join(process.cwd(), "public/videos/sequence-01.mp4");
+  const sourceUrl = "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Sequence%2001_4-Hmvrdzy5kIi1wvHPEBlAZhdtynK6KJ.mp4";
   
-  console.log("Reading video file from:", videoPath);
+  console.log("Fetching video from source URL...");
   
-  const fileBuffer = readFileSync(videoPath);
-  const blob = new Blob([fileBuffer], { type: "video/mp4" });
+  const response = await fetch(sourceUrl);
+  const arrayBuffer = await response.arrayBuffer();
+  const blob = new Blob([arrayBuffer], { type: "video/mp4" });
   
   console.log("Uploading to Vercel Blob...");
   

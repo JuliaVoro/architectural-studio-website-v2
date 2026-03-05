@@ -1,7 +1,7 @@
 const { put } = require("@vercel/blob");
 
 async function uploadVideo() {
-  const sourceUrl = "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Sequence%2001_4-Hmvrdzy5kIi1wvHPEBlAZhdtynK6KJ.mp4";
+  const sourceUrl = "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Copy%20of%20Architecture%20Angles_Topaz%20Video%20Upscaler_2026-03-05_23-06-36-VwRTwOJO1jPjOWtGo2olgfNAziZzwd.mp4";
   
   console.log("Fetching video from source URL...");
   
@@ -11,7 +11,7 @@ async function uploadVideo() {
   
   console.log("Uploading to Vercel Blob...");
   
-  const result = await put("header-videos/sequence-01.mp4", blob, {
+  const result = await put("header-videos/office-termoindustria.mp4", blob, {
     access: "public",
     contentType: "video/mp4",
   });

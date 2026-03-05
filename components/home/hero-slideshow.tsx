@@ -93,10 +93,13 @@ export function HeroSlideshow() {
       if (oldVideo) {
         oldVideo.pause();
       }
+      console.log("[v0] Switching to slide", index, "video refs:", Array.from(videoRefs.current.keys()));
       const newVideo = videoRefs.current.get(index);
       if (newVideo) {
         newVideo.currentTime = 0;
-        newVideo.play().catch(() => {});
+        newVideo.play().catch((err) => console.log("[v0] Play error:", err));
+      } else {
+        console.log("[v0] No video ref found for slide", index);
       }
 
       setTimeout(() => {
@@ -167,8 +170,7 @@ export function HeroSlideshow() {
               transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",
             }}
           >
-            {isVisible && (
-              <div
+            <div
                 className="absolute inset-0"
                 style={{
                   animation:
@@ -186,21 +188,23 @@ export function HeroSlideshow() {
                     muted
                     loop
                     playsInline
+                    preload="auto"
                     className="absolute inset-0 h-full w-full object-cover"
                     aria-label={`${slide.title} - ${slide.subtitle} project in ${slide.location}`}
                   />
                 ) : (
-                  <Image
-                    src={slide.src}
-                    alt={`${slide.title} - ${slide.subtitle} project in ${slide.location}`}
-                    fill
-                    className="object-cover"
-                    priority={index < 2}
-                    sizes="100vw"
-                  />
+                  isVisible && (
+                    <Image
+                      src={slide.src}
+                      alt={`${slide.title} - ${slide.subtitle} project in ${slide.location}`}
+                      fill
+                      className="object-cover"
+                      priority={index < 2}
+                      sizes="100vw"
+                    />
+                  )
                 )}
               </div>
-            )}
           </div>
         );
       })}

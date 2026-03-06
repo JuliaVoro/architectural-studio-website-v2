@@ -91,18 +91,21 @@ export function HeroSlideshow() {
     return IMAGE_DURATION;
   }, [current, videoDurations]);
 
-  // Preload next video when current slide changes
+  // Preload next video when approaching end of current slide
   useEffect(() => {
-    const nextIndex = (current + 1) % slides.length;
-    const nextSlide = slides[nextIndex];
-    
-    if (nextSlide.type === "video" && !videoReady.has(nextIndex)) {
-      const video = videoRefs.current.get(nextIndex);
-      if (video) {
-        video.load();
+    if (progress > 70) {
+      const nextIndex = (current + 1) % slides.length;
+      const nextSlide = slides[nextIndex];
+      
+      if (nextSlide.type === "video") {
+        const video = videoRefs.current.get(nextIndex);
+        if (video && video.preload === "metadata") {
+          video.preload = "auto";
+          video.load();
+        }
       }
     }
-  }, [current, videoReady]);
+  }, [current, progress]);
 
   const goToSlide = useCallback(
     (index: number) => {
@@ -175,18 +178,72 @@ export function HeroSlideshow() {
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
     >
-      {/* Slides - only render current, previous, and next slide for performance */}
+      {/* Video slides - always mounted for preloading */}
       {slides.map((slide, index) => {
+        if (slide.type !== "video") return null;
         const isActive = index === current;
         const isPrev = index === previous;
-        const isNext = index === (current + 1) % slides.length;
-        const shouldRender = isActive || isPrev || isNext;
+        
+        return (
+          <div
+            key={`video-${index}`}
+            className={cn(
+              "absolute inset-0 transition-opacity",
+              isActive
+                ? "z-20 opacity-100"
+                : isPrev
+                  ? "z-10 opacity-100"
+                  : "z-0 opacity-0"
+            )}
+            style={{
+              transitionDuration: `${TRANSITION_MS}ms`,
+              transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",
+            }}
+          >
+            <video
+              ref={(el) => {
+                if (el) videoRefs.current.set(index, el);
+              }}
+              src={slide.src}
+              poster={slide.poster}
+              muted
+              playsInline
+              preload={index === 0 ? "auto" : "metadata"}
+              onCanPlayThrough={() => {
+                setVideoReady((prev) => new Set(prev).add(index));
+                if (isActive) setIsBuffering(false);
+              }}
+              onWaiting={() => {
+                if (isActive) setIsBuffering(true);
+              }}
+              onPlaying={() => {
+                if (isActive) setIsBuffering(false);
+              }}
+              onLoadedMetadata={(e) => {
+                const video = e.currentTarget;
+                if (video.duration && isFinite(video.duration)) {
+                  setVideoDurations((prev) => new Map(prev).set(index, video.duration));
+                }
+              }}
+              className="absolute inset-0 h-full w-full object-cover"
+              aria-label={`${slide.title} - ${slide.subtitle} project in ${slide.location}`}
+            />
+          </div>
+        );
+      })}
 
-        if (!shouldRender) return null;
+      {/* Image slides - render only when needed */}
+      {slides.map((slide, index) => {
+        if (slide.type !== "image") return null;
+        const isActive = index === current;
+        const isPrev = index === previous;
+        const isVisible = isActive || isPrev;
+
+        if (!isVisible) return null;
 
         return (
           <div
-            key={index}
+            key={`image-${index}`}
             className={cn(
               "absolute inset-0 transition-opacity",
               isActive
@@ -201,54 +258,22 @@ export function HeroSlideshow() {
             }}
           >
             <div
-                className="absolute inset-0"
-                style={{
-                  animation:
-                    isActive && slide.type === "image"
-                      ? `kenBurns ${IMAGE_DURATION + TRANSITION_MS}ms ease-out forwards`
-                      : "none",
-                }}
-              >
-                {slide.type === "video" ? (
-                  <video
-                    ref={(el) => {
-                      if (el) videoRefs.current.set(index, el);
-                    }}
-                    src={slide.src}
-                    poster={slide.poster}
-                    muted
-                    playsInline
-                    preload={isActive || isNext ? "auto" : "none"}
-                    onCanPlay={() => {
-                      setVideoReady((prev) => new Set(prev).add(index));
-                      if (isActive) setIsBuffering(false);
-                    }}
-                    onWaiting={() => {
-                      if (isActive) setIsBuffering(true);
-                    }}
-                    onPlaying={() => {
-                      if (isActive) setIsBuffering(false);
-                    }}
-                    onLoadedMetadata={(e) => {
-                      const video = e.currentTarget;
-                      if (video.duration && isFinite(video.duration)) {
-                        setVideoDurations((prev) => new Map(prev).set(index, video.duration));
-                      }
-                    }}
-                    className="absolute inset-0 h-full w-full object-cover"
-                    aria-label={`${slide.title} - ${slide.subtitle} project in ${slide.location}`}
-                  />
-                ) : (
-                  <Image
-                    src={slide.src}
-                    alt={`${slide.title} - ${slide.subtitle} project in ${slide.location}`}
-                    fill
-                    className="object-cover"
-                    priority={index < 2}
-                    sizes="100vw"
-                  />
-                )}
-              </div>
+              className="absolute inset-0"
+              style={{
+                animation: isActive
+                  ? `kenBurns ${IMAGE_DURATION + TRANSITION_MS}ms ease-out forwards`
+                  : "none",
+              }}
+            >
+              <Image
+                src={slide.src}
+                alt={`${slide.title} - ${slide.subtitle} project in ${slide.location}`}
+                fill
+                className="object-cover"
+                priority={index < 3}
+                sizes="100vw"
+              />
+            </div>
           </div>
         );
       })}

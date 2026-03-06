@@ -211,14 +211,11 @@ export function HeroSlideshow() {
         );
       })}
 
-      {/* Image slides - render only when needed */}
+      {/* Image slides - always mounted for smooth transitions */}
       {slides.map((slide, index) => {
         if (slide.type !== "image") return null;
         const isActive = index === current;
         const isPrev = index === previous;
-        const isVisible = isActive || isPrev;
-
-        if (!isVisible) return null;
 
         return (
           <div

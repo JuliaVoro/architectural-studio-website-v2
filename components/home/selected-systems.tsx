@@ -51,7 +51,7 @@ export function SelectedSystems() {
   }, []);
 
   return (
-    <section ref={sectionRef} className="border-t border-border py-24 lg:py-32">
+    <section id="projects" ref={sectionRef} className="border-t border-border py-24 lg:py-32">
       <div className="mx-auto max-w-[1400px] px-6 lg:px-12">
         <div className="flex items-end justify-between">
           <div>

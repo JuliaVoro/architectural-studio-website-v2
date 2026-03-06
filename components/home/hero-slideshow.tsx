@@ -25,39 +25,42 @@ const slides: Slide[] = [
   },
   {
     type: "video",
-    src: "https://makgbcplbjjmrvrn.public.blob.vercel-storage.com/header-videos/office-termoindustria-v2.mp4",
-    poster: "/images/poster-office.jpg",
-    title: "Office Termoindustria",
-    subtitle: "Office",
+    src: "/videos/kidsroom.mp4",
+    poster: "/images/slide-lobby.jpg",
+    title: "Kids room",
+    subtitle: "Residential",
     location: "Tbilisi, Georgia",
   },
   {
     type: "image",
-    src: "/images/showroom-exterior.jpg",
-    title: "Showroom Exterior",
+    src: "/images/building-final.jpg",
+    title: "Dudeo Building",
+    subtitle: "Commercial Architecture",
+    location: "Tbilisi, Georgia",
+  },
+  {
+    type: "video",
+    src: "/videos/appartment.mp4",
+    poster: "/images/slide-retail.jpg",
+    title: "Residencial Appartment",
+    subtitle: "Residential",
+    location: "Tbilisi, Georgia",
+  },
+  {
+    type: "video",
+    src: "/videos/badroom.mp4",
+    poster: "/images/slide-workspace.jpg",
+    title: "Residencial 2",
+    subtitle: "Residential",
+    location: "Tbilisi, Georgia",
+  },
+  {
+    type: "video",
+    src: "/videos/office.mp4",
+    poster: "/images/poster-office.jpg",
+    title: "Office Project",
     subtitle: "Commercial",
     location: "Tbilisi, Georgia",
-  },
-  {
-    type: "image",
-    src: "/images/slide-lobby.jpg",
-    title: "Gran Palazzo",
-    subtitle: "Hospitality",
-    location: "Milan, Italy",
-  },
-  {
-    type: "image",
-    src: "/images/slide-retail.jpg",
-    title: "Forma Showroom",
-    subtitle: "Retail",
-    location: "Berlin, Germany",
-  },
-  {
-    type: "image",
-    src: "/images/slide-workspace.jpg",
-    title: "Atelier Collectif",
-    subtitle: "Workspace",
-    location: "Amsterdam, Netherlands",
   },
   {
     type: "image",
@@ -89,6 +92,36 @@ export function HeroSlideshow() {
 
   const SLIDE_DURATION = 3000; // 3 seconds for all slides
   const TRANSITION_MS = 1000;
+
+  // Force advance from first slide after specific time
+  useEffect(() => {
+    if (current === 0) {
+      const forceAdvanceTimer = setTimeout(() => {
+        nextSlide();
+      }, SLIDE_DURATION);
+      return () => clearTimeout(forceAdvanceTimer);
+    }
+  }, [current]);
+
+  // Initialize first video and ensure slideshow starts
+  useEffect(() => {
+    if (!hasInitialized.current && slides[0]?.type === "video") {
+      hasInitialized.current = true;
+      const firstVideo = videoRefs.current.get(0);
+      if (firstVideo) {
+        // Force play first video
+        const playPromise = firstVideo.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(() => {
+            // If autoplay fails, move to next slide after delay
+            setTimeout(() => {
+              if (current === 0) nextSlide();
+            }, 3000);
+          });
+        }
+      }
+    }
+  }, [current]);
 
   // Preload next video when current slide starts
   useEffect(() => {
@@ -140,7 +173,7 @@ export function HeroSlideshow() {
     goToSlide(next);
   }, [current, goToSlide]);
 
-  // Auto-advance timer
+  // Auto-advance timer with fallback for stuck videos
   const nextSlideRef = useRef(nextSlide);
   nextSlideRef.current = nextSlide;
 
@@ -157,8 +190,18 @@ export function HeroSlideshow() {
       });
     }, 50);
 
-    return () => clearInterval(interval);
-  }, [isTransitioning, isHovering]);
+    // Fallback: if we're stuck on first slide for too long, force advance
+    const fallbackTimer = setTimeout(() => {
+      if (current === 0 && !videoReady.has(0)) {
+        nextSlideRef.current();
+      }
+    }, SLIDE_DURATION * 2); // Wait 2x duration before fallback
+
+    return () => {
+      clearInterval(interval);
+      clearTimeout(fallbackTimer);
+    };
+  }, [isTransitioning, isHovering, current, videoReady]);
 
   
 
@@ -198,7 +241,15 @@ export function HeroSlideshow() {
               muted
               playsInline
               autoPlay={index === 0}
-              preload={index === 0 ? "auto" : "none"}
+              preload="auto"
+              loop={false}
+              onError={() => {
+                console.error(`Video ${index} failed to load`);
+                if (index === 0) {
+                  // Force next slide if first video fails
+                  setTimeout(() => nextSlide(), 1000);
+                }
+              }}
               onCanPlay={() => {
                 setVideoReady((prev) => new Set(prev).add(index));
                 if (isActive) setIsBuffering(false);
@@ -316,13 +367,16 @@ export function HeroSlideshow() {
                 opacity: 0,
               }}
             >
-              <Link
-                href="/systems"
+              <button
+                onClick={() => {
+                  const projectsSection = document.getElementById('projects');
+                  projectsSection?.scrollIntoView({ behavior: 'smooth' });
+                }}
                 className="group inline-flex items-center gap-3 text-[11px] font-medium uppercase tracking-[0.2em] text-cream/80 transition-colors duration-300 hover:text-cream"
               >
-                {"View Project"}
+                {"View Projects"}
                 <span className="inline-block h-px w-8 bg-cream/40 transition-all duration-300 group-hover:w-12 group-hover:bg-cream" />
-              </Link>
+              </button>
             </div>
           </div>
 

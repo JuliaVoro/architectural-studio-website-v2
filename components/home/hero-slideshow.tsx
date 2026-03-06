@@ -75,10 +75,20 @@ export function HeroSlideshow() {
   const [progress, setProgress] = useState(0);
   const [isHovering, setIsHovering] = useState(false);
   const [videoReady, setVideoReady] = useState<Set<number>>(new Set([0]));
+  const [videoDurations, setVideoDurations] = useState<Map<number, number>>(new Map());
   const videoRefs = useRef<Map<number, HTMLVideoElement>>(new Map());
 
-  const SLIDE_DURATION = 3000; // 3 seconds per slide
+  const IMAGE_DURATION = 4000; // 4 seconds for images
   const TRANSITION_MS = 1200;
+
+  // Get current slide duration - use video duration if available, otherwise default
+  const getCurrentDuration = useCallback(() => {
+    const slide = slides[current];
+    if (slide.type === "video" && videoDurations.has(current)) {
+      return videoDurations.get(current)! * 1000; // convert to ms
+    }
+    return IMAGE_DURATION;
+  }, [current, videoDurations]);
 
   // Preload next video when current slide changes
   useEffect(() => {
@@ -128,22 +138,25 @@ export function HeroSlideshow() {
   // Auto-advance timer using refs to avoid stale closures
   const nextSlideRef = useRef(nextSlide);
   nextSlideRef.current = nextSlide;
+  const getCurrentDurationRef = useRef(getCurrentDuration);
+  getCurrentDurationRef.current = getCurrentDuration;
 
   useEffect(() => {
     if (isTransitioning || isHovering) return;
 
+    const duration = getCurrentDurationRef.current();
     const interval = setInterval(() => {
       setProgress((prev) => {
         if (prev >= 100) {
           nextSlideRef.current();
           return 0;
         }
-        return prev + 100 / (SLIDE_DURATION / 50);
+        return prev + 100 / (duration / 50);
       });
     }, 50);
 
     return () => clearInterval(interval);
-  }, [isTransitioning, isHovering]);
+  }, [isTransitioning, isHovering, current, videoDurations]);
 
   // Play the first video on mount
   useEffect(() => {
@@ -188,7 +201,7 @@ export function HeroSlideshow() {
                 style={{
                   animation:
                     isActive && slide.type === "image"
-                      ? `kenBurns ${SLIDE_DURATION + TRANSITION_MS}ms ease-out forwards`
+                      ? `kenBurns ${IMAGE_DURATION + TRANSITION_MS}ms ease-out forwards`
                       : "none",
                 }}
               >
@@ -204,6 +217,12 @@ export function HeroSlideshow() {
                     preload={index <= 1 ? "auto" : "metadata"}
                     onCanPlay={() => {
                       setVideoReady((prev) => new Set(prev).add(index));
+                    }}
+                    onLoadedMetadata={(e) => {
+                      const video = e.currentTarget;
+                      if (video.duration && isFinite(video.duration)) {
+                        setVideoDurations((prev) => new Map(prev).set(index, video.duration));
+                      }
                     }}
                     className="absolute inset-0 h-full w-full object-cover"
                     aria-label={`${slide.title} - ${slide.subtitle} project in ${slide.location}`}

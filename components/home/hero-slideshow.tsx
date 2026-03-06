@@ -1,15 +1,14 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
-import { useRef } from "react";
-
 type Slide = {
   type: "image" | "video";
   src: string;
+  poster?: string;
   title: string;
   subtitle: string;
   location: string;
@@ -19,6 +18,7 @@ const slides: Slide[] = [
   {
     type: "video",
     src: "https://makgbcplbjjmrvrn.public.blob.vercel-storage.com/header-videos/office-termoindustria-v2.mp4",
+    poster: "/images/poster-office.jpg",
     title: "Office Termoindustria",
     subtitle: "Office",
     location: "Tbilisi, Georgia",
@@ -26,6 +26,7 @@ const slides: Slide[] = [
   {
     type: "video",
     src: "https://makgbcplbjjmrvrn.public.blob.vercel-storage.com/header-videos/bude_building.mp4",
+    poster: "/images/poster-bude.jpg",
     title: "Bude Plus",
     subtitle: "Retail",
     location: "Tbilisi, Georgia",
@@ -73,10 +74,24 @@ export function HeroSlideshow() {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [progress, setProgress] = useState(0);
   const [isHovering, setIsHovering] = useState(false);
+  const [videoReady, setVideoReady] = useState<Set<number>>(new Set([0]));
   const videoRefs = useRef<Map<number, HTMLVideoElement>>(new Map());
 
   const SLIDE_DURATION = 3000; // 3 seconds per slide
   const TRANSITION_MS = 1200;
+
+  // Preload next video when current slide changes
+  useEffect(() => {
+    const nextIndex = (current + 1) % slides.length;
+    const nextSlide = slides[nextIndex];
+    
+    if (nextSlide.type === "video" && !videoReady.has(nextIndex)) {
+      const video = videoRefs.current.get(nextIndex);
+      if (video) {
+        video.load();
+      }
+    }
+  }, [current, videoReady]);
 
   const goToSlide = useCallback(
     (index: number) => {
@@ -183,9 +198,13 @@ export function HeroSlideshow() {
                       if (el) videoRefs.current.set(index, el);
                     }}
                     src={slide.src}
+                    poster={slide.poster}
                     muted
                     playsInline
-                    preload="auto"
+                    preload={index <= 1 ? "auto" : "metadata"}
+                    onCanPlay={() => {
+                      setVideoReady((prev) => new Set(prev).add(index));
+                    }}
                     className="absolute inset-0 h-full w-full object-cover"
                     aria-label={`${slide.title} - ${slide.subtitle} project in ${slide.location}`}
                   />

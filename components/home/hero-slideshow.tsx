@@ -33,6 +33,13 @@ const slides: Slide[] = [
   },
   {
     type: "image",
+    src: "/images/showroom-exterior.jpg",
+    title: "Showroom Exterior",
+    subtitle: "Commercial",
+    location: "Tbilisi, Georgia",
+  },
+  {
+    type: "image",
     src: "/images/slide-lobby.jpg",
     title: "Gran Palazzo",
     subtitle: "Hospitality",

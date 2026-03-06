@@ -76,11 +76,12 @@ export function HeroSlideshow() {
   const [isHovering, setIsHovering] = useState(false);
   const [videoReady, setVideoReady] = useState<Set<number>>(new Set());
   const [videoDurations, setVideoDurations] = useState<Map<number, number>>(new Map());
-  const [isBuffering, setIsBuffering] = useState(true);
+  const [isBuffering, setIsBuffering] = useState(false);
   const videoRefs = useRef<Map<number, HTMLVideoElement>>(new Map());
+  const hasInitialized = useRef(false);
 
   const IMAGE_DURATION = 4000; // 4 seconds for images
-  const TRANSITION_MS = 1200;
+  const TRANSITION_MS = 1000; // faster transitions like Studio Marco Piva
 
   // Get current slide duration - use video duration if available, otherwise default
   const getCurrentDuration = useCallback(() => {
@@ -91,21 +92,20 @@ export function HeroSlideshow() {
     return IMAGE_DURATION;
   }, [current, videoDurations]);
 
-  // Preload next video when approaching end of current slide
+  // Preload next video when current slide starts
   useEffect(() => {
-    if (progress > 70) {
-      const nextIndex = (current + 1) % slides.length;
-      const nextSlide = slides[nextIndex];
-      
-      if (nextSlide.type === "video") {
-        const video = videoRefs.current.get(nextIndex);
-        if (video && video.preload === "metadata") {
-          video.preload = "auto";
-          video.load();
-        }
+    const nextIndex = (current + 1) % slides.length;
+    const nextSlide = slides[nextIndex];
+    
+    if (nextSlide.type === "video") {
+      const video = videoRefs.current.get(nextIndex);
+      if (video && video.preload === "none") {
+        video.preload = "auto";
+        video.src = nextSlide.src;
+        video.load();
       }
     }
-  }, [current, progress]);
+  }, [current]);
 
   const goToSlide = useCallback(
     (index: number) => {
@@ -115,11 +115,14 @@ export function HeroSlideshow() {
       setCurrent(index);
       setProgress(0);
 
-      // Pause old video, play new video
-      const oldVideo = videoRefs.current.get(current);
-      if (oldVideo) {
-        oldVideo.pause();
-      }
+      // Pause all videos, play new video
+      videoRefs.current.forEach((video, i) => {
+        if (i !== index) {
+          video.pause();
+          video.currentTime = 0;
+        }
+      });
+      
       const newVideo = videoRefs.current.get(index);
       if (newVideo) {
         newVideo.currentTime = 0;
@@ -162,15 +165,7 @@ export function HeroSlideshow() {
     return () => clearInterval(interval);
   }, [isTransitioning, isHovering, current, videoDurations]);
 
-  // Play the first video on mount
-  useEffect(() => {
-    if (slides[0].type === "video") {
-      const video = videoRefs.current.get(0);
-      if (video) {
-        video.play().catch(() => {});
-      }
-    }
-  }, []);
+  
 
   return (
     <section
@@ -204,19 +199,14 @@ export function HeroSlideshow() {
               ref={(el) => {
                 if (el) videoRefs.current.set(index, el);
               }}
-              src={slide.src}
               poster={slide.poster}
               muted
               playsInline
-              preload={index === 0 ? "auto" : "metadata"}
-              onCanPlayThrough={() => {
+              autoPlay={index === 0}
+              loop
+              preload={index === 0 ? "auto" : "none"}
+              onCanPlay={() => {
                 setVideoReady((prev) => new Set(prev).add(index));
-                if (isActive) setIsBuffering(false);
-              }}
-              onWaiting={() => {
-                if (isActive) setIsBuffering(true);
-              }}
-              onPlaying={() => {
                 if (isActive) setIsBuffering(false);
               }}
               onLoadedMetadata={(e) => {
@@ -227,7 +217,9 @@ export function HeroSlideshow() {
               }}
               className="absolute inset-0 h-full w-full object-cover"
               aria-label={`${slide.title} - ${slide.subtitle} project in ${slide.location}`}
-            />
+            >
+              <source src={slide.src} type="video/mp4" />
+            </video>
           </div>
         );
       })}
@@ -279,13 +271,6 @@ export function HeroSlideshow() {
       })}
 
       
-
-      {/* Loading indicator */}
-      {isBuffering && slides[current].type === "video" && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-cream/20 border-t-cream/80" />
-        </div>
-      )}
 
       {/* Full overlay - deep blue-black tint for cinematic feel and masking video quality */}
       <div className="absolute inset-0 z-25 bg-[#0a0f14]/40" />

@@ -102,25 +102,25 @@ export function HeroSlideshow() {
     (index: number) => {
       if (isTransitioning || index === current) return;
       setIsTransitioning(true);
-      setPrevious(current);
+      const prevIndex = current;
+      setPrevious(prevIndex);
       setCurrent(index);
       setProgress(0);
 
-      // Pause all videos, play new video
-      videoRefs.current.forEach((video, i) => {
-        if (i !== index) {
-          video.pause();
-          video.currentTime = 0;
-        }
-      });
-      
+      // Start playing the new video immediately
       const newVideo = videoRefs.current.get(index);
       if (newVideo) {
         newVideo.currentTime = 0;
         newVideo.play().catch(() => {});
       }
 
+      // After transition completes, pause the old video and clean up
       setTimeout(() => {
+        const oldVideo = videoRefs.current.get(prevIndex);
+        if (oldVideo) {
+          oldVideo.pause();
+          oldVideo.currentTime = 0;
+        }
         setIsTransitioning(false);
         setPrevious(-1);
       }, TRANSITION_MS);
@@ -180,7 +180,7 @@ export function HeroSlideshow() {
             )}
             style={{
               transitionDuration: `${TRANSITION_MS}ms`,
-              transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",
+              transitionTimingFunction: "ease-in-out",
             }}
           >
             <video
@@ -233,7 +233,7 @@ export function HeroSlideshow() {
             )}
             style={{
               transitionDuration: `${TRANSITION_MS}ms`,
-              transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",
+              transitionTimingFunction: "ease-in-out",
             }}
           >
             <div

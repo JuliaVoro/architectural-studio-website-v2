@@ -17,18 +17,18 @@ type Slide = {
 const slides: Slide[] = [
   {
     type: "video",
-    src: "https://makgbcplbjjmrvrn.public.blob.vercel-storage.com/header-videos/office-termoindustria-v2.mp4",
-    poster: "/images/poster-office.jpg",
-    title: "Office Termoindustria",
-    subtitle: "Office",
+    src: "https://makgbcplbjjmrvrn.public.blob.vercel-storage.com/header-videos/stairs.mp4",
+    poster: "/images/poster-bude.jpg",
+    title: "Bude Plus",
+    subtitle: "Retail",
     location: "Tbilisi, Georgia",
   },
   {
     type: "video",
-    src: "https://makgbcplbjjmrvrn.public.blob.vercel-storage.com/header-videos/bude.project2.mp4",
-    poster: "/images/poster-bude.jpg",
-    title: "Bude Plus",
-    subtitle: "Retail",
+    src: "https://makgbcplbjjmrvrn.public.blob.vercel-storage.com/header-videos/office-termoindustria-v2.mp4",
+    poster: "/images/poster-office.jpg",
+    title: "Office Termoindustria",
+    subtitle: "Office",
     location: "Tbilisi, Georgia",
   },
   {

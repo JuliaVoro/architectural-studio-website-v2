@@ -74,8 +74,9 @@ export function HeroSlideshow() {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [progress, setProgress] = useState(0);
   const [isHovering, setIsHovering] = useState(false);
-  const [videoReady, setVideoReady] = useState<Set<number>>(new Set([0]));
+  const [videoReady, setVideoReady] = useState<Set<number>>(new Set());
   const [videoDurations, setVideoDurations] = useState<Map<number, number>>(new Map());
+  const [isBuffering, setIsBuffering] = useState(true);
   const videoRefs = useRef<Map<number, HTMLVideoElement>>(new Map());
 
   const IMAGE_DURATION = 4000; // 4 seconds for images
@@ -174,11 +175,14 @@ export function HeroSlideshow() {
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
     >
-      {/* Slides */}
+      {/* Slides - only render current, previous, and next slide for performance */}
       {slides.map((slide, index) => {
         const isActive = index === current;
         const isPrev = index === previous;
-        const isVisible = isActive || isPrev;
+        const isNext = index === (current + 1) % slides.length;
+        const shouldRender = isActive || isPrev || isNext;
+
+        if (!shouldRender) return null;
 
         return (
           <div
@@ -214,9 +218,16 @@ export function HeroSlideshow() {
                     poster={slide.poster}
                     muted
                     playsInline
-                    preload={index <= 1 ? "auto" : "metadata"}
+                    preload={isActive || isNext ? "auto" : "none"}
                     onCanPlay={() => {
                       setVideoReady((prev) => new Set(prev).add(index));
+                      if (isActive) setIsBuffering(false);
+                    }}
+                    onWaiting={() => {
+                      if (isActive) setIsBuffering(true);
+                    }}
+                    onPlaying={() => {
+                      if (isActive) setIsBuffering(false);
                     }}
                     onLoadedMetadata={(e) => {
                       const video = e.currentTarget;
@@ -228,16 +239,14 @@ export function HeroSlideshow() {
                     aria-label={`${slide.title} - ${slide.subtitle} project in ${slide.location}`}
                   />
                 ) : (
-                  isVisible && (
-                    <Image
-                      src={slide.src}
-                      alt={`${slide.title} - ${slide.subtitle} project in ${slide.location}`}
-                      fill
-                      className="object-cover"
-                      priority={index < 2}
-                      sizes="100vw"
-                    />
-                  )
+                  <Image
+                    src={slide.src}
+                    alt={`${slide.title} - ${slide.subtitle} project in ${slide.location}`}
+                    fill
+                    className="object-cover"
+                    priority={index < 2}
+                    sizes="100vw"
+                  />
                 )}
               </div>
           </div>
@@ -245,6 +254,13 @@ export function HeroSlideshow() {
       })}
 
       
+
+      {/* Loading indicator */}
+      {isBuffering && slides[current].type === "video" && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-cream/20 border-t-cream/80" />
+        </div>
+      )}
 
       {/* Full overlay - deep blue-black tint for cinematic feel and masking video quality */}
       <div className="absolute inset-0 z-25 bg-[#0a0f14]/40" />

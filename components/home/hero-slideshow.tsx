@@ -80,17 +80,8 @@ export function HeroSlideshow() {
   const videoRefs = useRef<Map<number, HTMLVideoElement>>(new Map());
   const hasInitialized = useRef(false);
 
-  const IMAGE_DURATION = 4000; // 4 seconds for images
-  const TRANSITION_MS = 1000; // faster transitions like Studio Marco Piva
-
-  // Get current slide duration - use video duration if available, otherwise default
-  const getCurrentDuration = useCallback(() => {
-    const slide = slides[current];
-    if (slide.type === "video" && videoDurations.has(current)) {
-      return videoDurations.get(current)! * 1000; // convert to ms
-    }
-    return IMAGE_DURATION;
-  }, [current, videoDurations]);
+  const SLIDE_DURATION = 3000; // 3 seconds for all slides
+  const TRANSITION_MS = 1000;
 
   // Preload next video when current slide starts
   useEffect(() => {
@@ -142,28 +133,25 @@ export function HeroSlideshow() {
     goToSlide(next);
   }, [current, goToSlide]);
 
-  // Auto-advance timer using refs to avoid stale closures
+  // Auto-advance timer
   const nextSlideRef = useRef(nextSlide);
   nextSlideRef.current = nextSlide;
-  const getCurrentDurationRef = useRef(getCurrentDuration);
-  getCurrentDurationRef.current = getCurrentDuration;
 
   useEffect(() => {
     if (isTransitioning || isHovering) return;
 
-    const duration = getCurrentDurationRef.current();
     const interval = setInterval(() => {
       setProgress((prev) => {
         if (prev >= 100) {
           nextSlideRef.current();
           return 0;
         }
-        return prev + 100 / (duration / 50);
+        return prev + 100 / (SLIDE_DURATION / 50);
       });
     }, 50);
 
     return () => clearInterval(interval);
-  }, [isTransitioning, isHovering, current, videoDurations]);
+  }, [isTransitioning, isHovering]);
 
   
 
@@ -203,7 +191,6 @@ export function HeroSlideshow() {
               muted
               playsInline
               autoPlay={index === 0}
-              loop
               preload={index === 0 ? "auto" : "none"}
               onCanPlay={() => {
                 setVideoReady((prev) => new Set(prev).add(index));
@@ -253,7 +240,7 @@ export function HeroSlideshow() {
               className="absolute inset-0"
               style={{
                 animation: isActive
-                  ? `kenBurns ${IMAGE_DURATION + TRANSITION_MS}ms ease-out forwards`
+                  ? `kenBurns ${SLIDE_DURATION + TRANSITION_MS}ms ease-out forwards`
                   : "none",
               }}
             >

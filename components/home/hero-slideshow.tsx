@@ -246,8 +246,11 @@ export function HeroSlideshow() {
 
       
 
+      {/* Full overlay - deep blue-black tint for cinematic feel and masking video quality */}
+      <div className="absolute inset-0 z-25 bg-[#0a0f14]/40" />
+
       {/* Bottom gradient for text readability */}
-      <div className="absolute inset-x-0 bottom-0 z-30 h-[50%] bg-gradient-to-t from-charcoal/70 via-charcoal/30 to-transparent" />
+      <div className="absolute inset-x-0 bottom-0 z-30 h-[50%] bg-gradient-to-t from-[#0a0f14]/80 via-[#0a0f14]/40 to-transparent" />
 
       {/* Bottom content overlay */}
       <div className="absolute inset-0 z-40 flex flex-col justify-end">

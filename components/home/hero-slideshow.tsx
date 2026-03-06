@@ -25,7 +25,7 @@ const slides: Slide[] = [
   },
   {
     type: "video",
-    src: "https://makgbcplbjjmrvrn.public.blob.vercel-storage.com/header-videos/bude_project.mp4",
+    src: "https://makgbcplbjjmrvrn.public.blob.vercel-storage.com/header-videos/bude.project2.mp4",
     poster: "/images/poster-bude.jpg",
     title: "Bude Plus",
     subtitle: "Retail",

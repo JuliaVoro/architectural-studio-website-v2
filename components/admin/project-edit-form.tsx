@@ -56,7 +56,7 @@ function SectionEditor({ section, index, onUpdate, onDelete, onMoveUp, onMoveDow
       const filePath = `projects/${editData.id || section.id}/${mediaType}/${fileName}`;
 
       const { error: uploadError } = await supabaseBrowserClient.storage
-        .from('media')
+        .from('project-media')
         .upload(filePath, file);
 
       if (uploadError) {

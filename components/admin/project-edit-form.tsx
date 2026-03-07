@@ -3,16 +3,333 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabaseBrowserClient } from "@/lib/supabase-client";
-import type { Project } from "@/lib/projects";
+import type { Project, ProjectSection } from "@/lib/projects";
+import { getProjectMediaUrl } from "@/lib/projects";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Sparkles, RefreshCw } from "lucide-react";
+import { Loader2, Sparkles, RefreshCw, Plus, Trash2, Edit3, Image as ImageIcon, Video, FileText, Move } from "lucide-react";
+import Image from "next/image";
 
 interface ProjectEditFormProps {
   project: Project;
+}
+
+interface SectionEditProps {
+  section: ProjectSection;
+  index: number;
+  onUpdate: (index: number, section: ProjectSection) => void;
+  onDelete: (index: number) => void;
+}
+
+function SectionEditor({ section, index, onUpdate, onDelete }: SectionEditProps) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editData, setEditData] = useState(section);
+
+  const handleSave = () => {
+    onUpdate(index, editData);
+    setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    setEditData(section);
+    setIsEditing(false);
+  };
+
+  const renderSectionContent = () => {
+    switch (section.type) {
+      case "full_image":
+        return (
+          <div className="space-y-4">
+            <div className="relative aspect-[16/10] w-full bg-sand rounded-lg overflow-hidden">
+              <Image
+                src={getProjectMediaUrl(section.imagePath)}
+                alt={section.caption || "Project image"}
+                fill
+                className="object-cover"
+              />
+            </div>
+            {isEditing ? (
+              <div className="space-y-3">
+                <Label>Caption</Label>
+                <Textarea
+                  value={editData.caption || ""}
+                  onChange={(e) => setEditData({ ...editData, caption: e.target.value })}
+                  placeholder="Image caption"
+                  rows={2}
+                />
+                <Label>Label</Label>
+                <Input
+                  value={editData.label || ""}
+                  onChange={(e) => setEditData({ ...editData, label: e.target.value })}
+                  placeholder="Section label"
+                />
+              </div>
+            ) : (
+              <>
+                {section.label && (
+                  <p className="text-sm text-muted-foreground">{section.label}</p>
+                )}
+                {section.caption && (
+                  <p className="text-sm text-neutral-600">{section.caption}</p>
+                )}
+              </>
+            )}
+          </div>
+        );
+
+      case "text_block":
+        return (
+          <div className="space-y-4">
+            {isEditing ? (
+              <div className="space-y-3">
+                <Label>Heading</Label>
+                <Input
+                  value={editData.heading || ""}
+                  onChange={(e) => setEditData({ ...editData, heading: e.target.value })}
+                  placeholder="Section heading"
+                />
+                <Label>Body</Label>
+                <Textarea
+                  value={editData.body || ""}
+                  onChange={(e) => setEditData({ ...editData, body: e.target.value })}
+                  placeholder="Section content"
+                  rows={6}
+                />
+                <Label>Label</Label>
+                <Input
+                  value={editData.label || ""}
+                  onChange={(e) => setEditData({ ...editData, label: e.target.value })}
+                  placeholder="Section label"
+                />
+              </div>
+            ) : (
+              <div>
+                {section.heading && (
+                  <h3 className="font-serif text-2xl text-neutral-900 mb-4">{section.heading}</h3>
+                )}
+                {section.label && (
+                  <p className="text-sm text-muted-foreground mb-2">{section.label}</p>
+                )}
+                <p className="text-neutral-700 leading-relaxed">{section.body}</p>
+              </div>
+            )}
+          </div>
+        );
+
+      case "gallery_grid":
+        return (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {section.imagePaths?.map((imgPath, idx) => (
+                <div key={idx} className="relative aspect-square bg-sand rounded-lg overflow-hidden">
+                  <Image
+                    src={getProjectMediaUrl(imgPath)}
+                    alt={`Gallery image ${idx + 1}`}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+              ))}
+            </div>
+            {isEditing && (
+              <div className="space-y-3">
+                <Label>Label</Label>
+                <Input
+                  value={editData.label || ""}
+                  onChange={(e) => setEditData({ ...editData, label: e.target.value })}
+                  placeholder="Gallery label"
+                />
+              </div>
+            )}
+            {!isEditing && section.label && (
+              <p className="text-sm text-muted-foreground">{section.label}</p>
+            )}
+          </div>
+        );
+
+      case "video":
+        return (
+          <div className="space-y-4">
+            <div className="relative aspect-video bg-black rounded-lg overflow-hidden">
+              <video
+                src={getProjectMediaUrl(section.videoPath)}
+                controls
+                className="w-full h-full"
+                poster="/placeholder.jpg"
+              />
+            </div>
+            {isEditing ? (
+              <div className="space-y-3">
+                <Label>Caption</Label>
+                <Textarea
+                  value={editData.caption || ""}
+                  onChange={(e) => setEditData({ ...editData, caption: e.target.value })}
+                  placeholder="Video caption"
+                  rows={2}
+                />
+                <Label>Label</Label>
+                <Input
+                  value={editData.label || ""}
+                  onChange={(e) => setEditData({ ...editData, label: e.target.value })}
+                  placeholder="Video label"
+                />
+              </div>
+            ) : (
+              <>
+                {section.label && (
+                  <p className="text-sm text-muted-foreground">{section.label}</p>
+                )}
+                {section.caption && (
+                  <p className="text-sm text-neutral-600">{section.caption}</p>
+                )}
+              </>
+            )}
+          </div>
+        );
+
+      case "technical_drawings":
+        return (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {section.drawingPaths?.map((drawingPath, idx) => (
+                <div key={idx} className="relative aspect-[4/3] bg-sand rounded-lg overflow-hidden">
+                  <Image
+                    src={getProjectMediaUrl(drawingPath)}
+                    alt={`Technical drawing ${idx + 1}`}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+              ))}
+            </div>
+            {isEditing && (
+              <div className="space-y-3">
+                <Label>Label</Label>
+                <Input
+                  value={editData.label || ""}
+                  onChange={(e) => setEditData({ ...editData, label: e.target.value })}
+                  placeholder="Drawings label"
+                />
+                <Label>Notes</Label>
+                <Textarea
+                  value={editData.notes || ""}
+                  onChange={(e) => setEditData({ ...editData, notes: e.target.value })}
+                  placeholder="Technical notes"
+                  rows={2}
+                />
+              </div>
+            )}
+            {!isEditing && (
+              <>
+                {section.label && (
+                  <p className="text-sm text-muted-foreground">{section.label}</p>
+                )}
+                {section.notes && (
+                  <p className="text-sm text-neutral-600">{section.notes}</p>
+                )}
+              </>
+            )}
+          </div>
+        );
+
+      case "materials_table":
+        return (
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {section.items?.map((item, idx) => (
+                <div key={idx} className="border-b border-neutral-200 pb-4">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <div className="font-medium text-neutral-900">{item.name}</div>
+                      {item.description && (
+                        <div className="text-sm text-neutral-600 mt-1">{item.description}</div>
+                      )}
+                    </div>
+                    {item.role && (
+                      <div className="text-xs uppercase tracking-[0.18em] text-neutral-500">
+                        {item.role}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+            {isEditing && (
+              <div className="space-y-3">
+                <Label>Label</Label>
+                <Input
+                  value={editData.label || ""}
+                  onChange={(e) => setEditData({ ...editData, label: e.target.value })}
+                  placeholder="Materials label"
+                />
+              </div>
+            )}
+            {!isEditing && section.label && (
+              <p className="text-sm text-muted-foreground">{section.label}</p>
+            )}
+          </div>
+        );
+
+      default:
+        return <p className="text-muted-foreground">Unknown section type</p>;
+    }
+  };
+
+  return (
+    <Card>
+      <CardContent className="p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            {section.type === "full_image" && <ImageIcon className="w-4 h-4" />}
+            {section.type === "text_block" && <FileText className="w-4 h-4" />}
+            {section.type === "gallery_grid" && <ImageIcon className="w-4 h-4" />}
+            {section.type === "video" && <Video className="w-4 h-4" />}
+            {section.type === "technical_drawings" && <FileText className="w-4 h-4" />}
+            {section.type === "materials_table" && <FileText className="w-4 h-4" />}
+            <span className="text-sm font-medium capitalize">
+              {section.type.replace("_", " ")}
+            </span>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsEditing(!isEditing)}
+              className="flex items-center gap-1"
+            >
+              {isEditing ? (
+                "Cancel"
+              ) : (
+                <>
+                  <Edit3 className="w-3 h-3" />
+                  Edit
+                </>
+              )}
+            </Button>
+            {isEditing && (
+              <Button size="sm" onClick={handleSave}>
+                Save
+              </Button>
+            )}
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => onDelete(index)}
+              className="flex items-center gap-1"
+            >
+              <Trash2 className="w-3 h-3" />
+              Delete
+            </Button>
+          </div>
+        </div>
+
+        {renderSectionContent()}
+      </CardContent>
+    </Card>
+  );
 }
 
 export default function ProjectEditForm({ project }: ProjectEditFormProps) {
@@ -22,6 +339,7 @@ export default function ProjectEditForm({ project }: ProjectEditFormProps) {
   const [aiLoading, setAiLoading] = useState<string | null>(null);
   const [aiSuggestions, setAiSuggestions] = useState<{ [key: string]: string }>({});
   const [showAiSuggestions, setShowAiSuggestions] = useState<{ [key: string]: boolean }>({});
+  const [sections, setSections] = useState<ProjectSection[]>(project.sections || []);
   
   const [formData, setFormData] = useState({
     title: project.keyFacts.title,
@@ -33,6 +351,7 @@ export default function ProjectEditForm({ project }: ProjectEditFormProps) {
     notes: project.notes || "",
     introText: project.introText || "",
     story: project.story || "",
+    heroImagePath: project.heroImagePath || "",
   });
 
   const handleInputChange = (field: string, value: string | number) => {
@@ -42,58 +361,17 @@ export default function ProjectEditForm({ project }: ProjectEditFormProps) {
     }));
   };
 
-  const handleAIGeneration = async (field: string, customPrompt?: string) => {
-    setAiLoading(field);
-    
-    try {
-      const response = await fetch("/api/projects/ai-regenerate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          projectId: project.id,
-          field,
-          currentContent: formData[field as keyof typeof formData],
-          customPrompt,
-          projectContext: {
-            title: formData.title,
-            location: formData.location,
-            materials: formData.materials,
-            year: formData.year,
-          }
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to generate content");
-      }
-
-      const data = await response.json();
-      setAiSuggestions(prev => ({
-        ...prev,
-        [field]: data.content
-      }));
-      setShowAiSuggestions(prev => ({
-        ...prev,
-        [field]: true
-      }));
-    } catch (error) {
-      console.error("Error generating content:", error);
-      alert("Failed to generate AI content. Please try again.");
-    } finally {
-      setAiLoading(null);
-    }
+  const handleSectionUpdate = (index: number, updatedSection: ProjectSection) => {
+    setSections(prev => {
+      const newSections = [...prev];
+      newSections[index] = updatedSection;
+      return newSections;
+    });
   };
 
-  const applyAiSuggestion = (field: string) => {
-    const suggestion = aiSuggestions[field];
-    if (suggestion) {
-      handleInputChange(field, suggestion);
-      setShowAiSuggestions(prev => ({
-        ...prev,
-        [field]: false
-      }));
+  const handleSectionDelete = (index: number) => {
+    if (confirm("Are you sure you want to delete this section?")) {
+      setSections(prev => prev.filter((_, i) => i !== index));
     }
   };
 
@@ -117,6 +395,8 @@ export default function ProjectEditForm({ project }: ProjectEditFormProps) {
           notes: formData.notes || null,
           intro_text: formData.introText || null,
           story: formData.story || null,
+          hero_image_path: formData.heroImagePath || null,
+          sections: sections,
           updated_at: new Date().toISOString(),
         })
         .eq("id", project.id);
@@ -203,6 +483,34 @@ export default function ProjectEditForm({ project }: ProjectEditFormProps) {
                 onChange={(e) => handleInputChange("client", e.target.value)}
                 placeholder="Client name"
               />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Hero Image */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Hero Image</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="relative aspect-[16/9] w-full bg-sand rounded-lg overflow-hidden">
+              {formData.heroImagePath ? (
+                <Image
+                  src={getProjectMediaUrl(formData.heroImagePath)}
+                  alt="Hero image"
+                  fill
+                  className="object-cover"
+                />
+              ) : (
+                <div className="flex items-center justify-center h-full text-muted-foreground">
+                  <ImageIcon className="w-12 h-12" />
+                </div>
+              )}
+            </div>
+            <div className="text-sm text-muted-foreground">
+              Current hero image: {formData.heroImagePath || "No hero image set"}
             </div>
           </div>
         </CardContent>
@@ -330,6 +638,33 @@ export default function ProjectEditForm({ project }: ProjectEditFormProps) {
               placeholder="Additional notes or technical details..."
               rows={4}
             />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Project Sections */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Project Sections</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-6">
+            {sections.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground border-2 border-dashed rounded-lg">
+                <FileText className="w-12 h-12 mx-auto mb-4" />
+                <p>No sections yet. Sections are generated by AI when creating projects.</p>
+              </div>
+            ) : (
+              sections.map((section, index) => (
+                <SectionEditor
+                  key={section.id}
+                  section={section}
+                  index={index}
+                  onUpdate={handleSectionUpdate}
+                  onDelete={handleSectionDelete}
+                />
+              ))
+            )}
           </div>
         </CardContent>
       </Card>

@@ -298,8 +298,8 @@ export function HeroSlideshow() {
                 alt={`${slide.title} - ${slide.subtitle} project in ${slide.location}`}
                 fill
                 className="object-cover"
-                priority={index < 3}
-                loading={index === 0 ? "eager" : index < 3 ? "auto" : "lazy"}
+                priority={index === 0}
+                loading={index === 0 ? "eager" : "lazy"}
                 sizes="100vw"
               />
             </div>

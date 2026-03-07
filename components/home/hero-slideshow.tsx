@@ -203,6 +203,7 @@ export function HeroSlideshow() {
       className="relative h-screen w-full overflow-hidden"
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
+      suppressHydrationWarning
     >
       {/* Video slides - always rendered to prevent hydration mismatch */}
       {slides.map((slide, index) => {
@@ -310,13 +311,13 @@ export function HeroSlideshow() {
       
 
       {/* Full overlay - deep blue-black tint for cinematic feel and masking video quality */}
-      <div className="absolute inset-0 z-25 bg-[#0a0f14]/40" />
+      <div className="absolute inset-0 z-25 bg-[#0a0f14]/40" suppressHydrationWarning />
 
       {/* Bottom gradient for text readability */}
-      <div className="absolute inset-x-0 bottom-0 z-30 h-[50%] bg-gradient-to-t from-[#0a0f14]/80 via-[#0a0f14]/40 to-transparent" />
+      <div className="absolute inset-x-0 bottom-0 z-30 h-[50%] bg-gradient-to-t from-[#0a0f14]/80 via-[#0a0f14]/40 to-transparent" suppressHydrationWarning />
 
       {/* Bottom content overlay */}
-      <div className="absolute inset-0 z-40 flex flex-col justify-end">
+      <div className="absolute inset-0 z-40 flex flex-col justify-end" suppressHydrationWarning>
         <div className="mx-auto w-full max-w-[1400px] px-6 pb-12 lg:px-12 lg:pb-16">
           {/* Project info */}
           <div className="mb-8 flex flex-col gap-6 lg:mb-12 lg:flex-row lg:items-end lg:justify-between">

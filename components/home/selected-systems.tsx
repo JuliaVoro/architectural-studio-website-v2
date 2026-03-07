@@ -88,7 +88,7 @@ export function SelectedSystems() {
             </h2>
           </div>
           <Link
-            href="/projects"
+            href="/systems"
             className="hidden text-sm text-muted-foreground transition-colors duration-300 hover:text-foreground md:inline-block"
           >
             {"View All →"}
@@ -119,7 +119,7 @@ export function SelectedSystems() {
           ) : projects.length > 0 ? (
             projects.map((project, index) => (
               <Link
-                href={`/projects/${project.slug}`}
+                href={`/systems/${project.slug}`}
                 key={project.id}
                 className="group"
                 style={{
@@ -155,7 +155,7 @@ export function SelectedSystems() {
         </div>
 
         <Link
-          href="/projects"
+          href="/systems"
           className="mt-10 inline-block text-sm text-muted-foreground transition-colors duration-300 hover:text-foreground md:hidden"
         >
           {"View All →"}

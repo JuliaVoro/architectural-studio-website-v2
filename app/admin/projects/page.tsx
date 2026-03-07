@@ -1,119 +1,113 @@
 import Link from "next/link";
+import { supabaseServerClient } from "@/lib/supabase-client";
+import type { Project } from "@/lib/projects";
+import { getProjectMediaUrl } from "@/lib/projects";
+import Image from "next/image";
 
-async function getProjects() {
-  const baseUrl =
-    process.env.NEXT_PUBLIC_SITE_URL ??
-    process.env.VERCEL_URL ??
-    "http://localhost:3000";
-
-  const url =
-    typeof baseUrl === "string" && !baseUrl.startsWith("http")
-      ? `https://${baseUrl}`
-      : baseUrl;
-
-  const res = await fetch(`${url}/api/projects`, {
-    cache: "no-store",
-  });
-
-  if (!res.ok) {
-    throw new Error("Failed to load projects");
+async function getProjects(): Promise<Project[]> {
+  if (!supabaseServerClient) {
+    return [];
   }
 
-  const data = (await res.json()) as {
-    projects: Array<{
-      id: string;
-      slug: string;
-      createdAt: string;
-      status: string;
-      keyFacts: { title: string; location?: string; year?: number };
-    }>;
-  };
+  const { data, error } = await supabaseServerClient
+    .from("projects")
+    .select("*")
+    .order("created_at", { ascending: false });
 
-  return data.projects;
+  if (error || !data) {
+    console.error("Error loading projects:", error);
+    return [];
+  }
+
+  return data.map((row: any) => ({
+    id: row.id,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+    status: row.status,
+    featured: row.featured,
+    slug: row.slug,
+    keyFacts: {
+      title: row.title,
+      location: row.location ?? undefined,
+      year: row.year ?? undefined,
+      size: row.size ?? undefined,
+      materials: row.materials ?? undefined,
+      client: row.client ?? undefined,
+    },
+    notes: row.notes ?? undefined,
+    heroImagePath: row.hero_image_path ?? undefined,
+    introText: row.intro_text ?? undefined,
+    story: row.story ?? undefined,
+    sections: row.sections ?? undefined,
+    aiRawResponse: row.ai_raw_response ?? undefined,
+  }));
 }
 
 export default async function AdminProjectsPage() {
-  const projects = await getProjects().catch(() => []);
+  const projects = await getProjects();
 
   return (
     <div className="space-y-6">
       <header className="flex items-center justify-between">
         <div>
           <h1 className="text-xs font-medium uppercase tracking-[0.25em] text-neutral-500">
-            Projects
+            Systems
           </h1>
           <p className="mt-2 max-w-xl text-sm text-neutral-600">
-            Overview of AI-generated case studies. Click through to preview the
-            public project page.
+            Overview of AI-generated architectural systems. Click through to preview the
+            public systems page.
           </p>
         </div>
         <Link
           href="/admin/projects/new"
           className="rounded-full border border-neutral-900 px-4 py-2 text-xs font-medium uppercase tracking-[0.2em] text-neutral-900 hover:bg-neutral-900 hover:text-white"
         >
-          New Project
+          New System
         </Link>
       </header>
 
-      <div className="overflow-hidden rounded-lg border border-neutral-200 bg-white">
-        <table className="min-w-full text-sm">
-          <thead className="border-b border-neutral-200 bg-neutral-50 text-xs uppercase tracking-[0.18em] text-neutral-500">
-            <tr>
-              <th className="px-4 py-3 text-left">Title</th>
-              <th className="px-4 py-3 text-left">Location</th>
-              <th className="px-4 py-3 text-left">Year</th>
-              <th className="px-4 py-3 text-left">Status</th>
-              <th className="px-4 py-3 text-right">Open</th>
-            </tr>
-          </thead>
-          <tbody>
-            {projects.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={5}
-                  className="px-4 py-8 text-center text-sm text-neutral-500"
-                >
-                  No projects yet. Start by creating a new one.
-                </td>
-              </tr>
-            ) : (
-              projects.map((project) => (
-                <tr
-                  key={project.id}
-                  className="border-b border-neutral-100 last:border-0"
-                >
-                  <td className="px-4 py-3">
-                    <div className="font-medium text-neutral-900">
-                      {project.keyFacts.title}
-                    </div>
-                    <div className="text-xs text-neutral-500">
-                      {new Date(project.createdAt).toLocaleDateString()}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-neutral-600">
-                    {project.keyFacts.location ?? "—"}
-                  </td>
-                  <td className="px-4 py-3 text-neutral-600">
-                    {project.keyFacts.year ?? "—"}
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className="rounded-full border border-neutral-300 px-2 py-1 text-[11px] uppercase tracking-[0.18em] text-neutral-600">
-                      {project.status}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-right text-xs">
-                    <Link
-                      href={`/projects/${project.slug}`}
-                      className="text-neutral-900 underline underline-offset-4"
-                    >
-                      View
-                    </Link>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+        {projects.length === 0 ? (
+          <div className="col-span-full text-center py-12 border border-neutral-200 rounded-lg">
+            <p className="text-sm text-neutral-500">
+              No systems yet. Start by creating a new one.
+            </p>
+          </div>
+        ) : (
+          projects.map((project, index) => (
+            <Link
+              key={project.id}
+              href={`/systems/${project.slug}`}
+              className="group block"
+            >
+              <div className="relative aspect-[16/10] w-full overflow-hidden bg-sand rounded-lg border border-neutral-200">
+                <Image
+                  src={project.heroImagePath ? getProjectMediaUrl(project.heroImagePath) : "/placeholder.jpg"}
+                  alt={project.keyFacts.title}
+                  fill
+                  className="object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                />
+              </div>
+              <div className="mt-5">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-base font-medium text-neutral-900">
+                    {project.keyFacts.title}
+                  </h3>
+                  <span className="rounded-full border border-neutral-300 px-2 py-1 text-[11px] uppercase tracking-[0.18em] text-neutral-600">
+                    {project.status}
+                  </span>
+                </div>
+                <p className="text-sm text-neutral-600">
+                  {project.keyFacts.location ?? "—"} • {project.keyFacts.year ?? "—"}
+                </p>
+                <p className="text-xs text-neutral-500 mt-1">
+                  {new Date(project.createdAt).toLocaleDateString()}
+                </p>
+              </div>
+            </Link>
+          ))
+        )}
       </div>
     </div>
   );

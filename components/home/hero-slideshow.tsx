@@ -116,35 +116,20 @@ export function HeroSlideshow() {
     }
   }, [current]);
 
-  // Preload next and current video, unload far videos
+  // Pause non-active videos to improve performance
   useEffect(() => {
-    const nextIndex = (current + 1) % slides.length;
-    
-    // Load current and next videos only
-    [current, nextIndex].forEach((index) => {
-      const slide = slides[index];
+    slides.forEach((slide, index) => {
       if (slide.type === "video") {
         const video = videoRefs.current.get(index);
-        if (video && !video.src) {
-          video.preload = "auto";
-          video.src = slide.src;
-          video.load();
-        }
-      }
-    });
-
-    // Unload far videos to free memory
-    slides.forEach((slide, index) => {
-      if (slide.type === "video" && index !== current && index !== nextIndex) {
-        const video = videoRefs.current.get(index);
         if (video) {
-          video.src = "";
-          video.pause();
-          video.currentTime = 0;
+          if (index !== current && index !== previous) {
+            video.pause();
+            video.currentTime = 0;
+          }
         }
       }
     });
-  }, [current]);
+  }, [current, previous]);
 
   const goToSlide = useCallback(
     (index: number) => {
@@ -250,10 +235,9 @@ export function HeroSlideshow() {
               muted
               playsInline
               autoPlay={index === 0}
-              preload="auto"
+              preload={index === 0 || index === (current + 1) % slides.length ? "auto" : "metadata"}
               loop={false}
               onError={() => {
-                console.error(`Video ${index} failed to load`);
                 if (index === 0) {
                   // Force next slide if first video fails
                   setTimeout(() => nextSlide(), 1000);

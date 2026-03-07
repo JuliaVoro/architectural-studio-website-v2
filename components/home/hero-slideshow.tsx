@@ -315,6 +315,7 @@ export function HeroSlideshow() {
                 fill
                 className="object-cover"
                 priority={index < 3}
+                loading={index === 0 ? "eager" : index < 3 ? "auto" : "lazy"}
                 sizes="100vw"
               />
             </div>

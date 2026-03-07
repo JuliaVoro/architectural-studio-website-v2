@@ -116,19 +116,34 @@ export function HeroSlideshow() {
     }
   }, [current]);
 
-  // Preload next video when current slide starts
+  // Preload next and current video, unload far videos
   useEffect(() => {
     const nextIndex = (current + 1) % slides.length;
-    const nextSlide = slides[nextIndex];
     
-    if (nextSlide.type === "video") {
-      const video = videoRefs.current.get(nextIndex);
-      if (video && video.preload === "none") {
-        video.preload = "auto";
-        video.src = nextSlide.src;
-        video.load();
+    // Load current and next videos only
+    [current, nextIndex].forEach((index) => {
+      const slide = slides[index];
+      if (slide.type === "video") {
+        const video = videoRefs.current.get(index);
+        if (video && !video.src) {
+          video.preload = "auto";
+          video.src = slide.src;
+          video.load();
+        }
       }
-    }
+    });
+
+    // Unload far videos to free memory
+    slides.forEach((slide, index) => {
+      if (slide.type === "video" && index !== current && index !== nextIndex) {
+        const video = videoRefs.current.get(index);
+        if (video) {
+          video.src = "";
+          video.pause();
+          video.currentTime = 0;
+        }
+      }
+    });
   }, [current]);
 
   const goToSlide = useCallback(
@@ -204,11 +219,15 @@ export function HeroSlideshow() {
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
     >
-      {/* Video slides - always mounted for preloading */}
+      {/* Video slides - only mount current, previous, and next for performance */}
       {slides.map((slide, index) => {
         if (slide.type !== "video") return null;
         const isActive = index === current;
         const isPrev = index === previous;
+        const isNext = index === (current + 1) % slides.length;
+        
+        // Only render currently visible or transitioning slides plus next slide
+        if (!isActive && !isPrev && !isNext) return null;
         
         return (
           <div
@@ -219,11 +238,12 @@ export function HeroSlideshow() {
                 ? "z-20 opacity-100"
                 : isPrev
                   ? "z-10 opacity-100"
-                  : "z-0 opacity-0"
+                  : "z-0 opacity-0 pointer-events-none"
             )}
             style={{
               transitionDuration: `${TRANSITION_MS}ms`,
               transitionTimingFunction: "ease-in-out",
+              willChange: isActive || isPrev ? "opacity" : "auto",
             }}
           >
             <video
@@ -262,11 +282,15 @@ export function HeroSlideshow() {
         );
       })}
 
-      {/* Image slides - always mounted for smooth transitions */}
+      {/* Image slides - only mount current, previous, and next for performance */}
       {slides.map((slide, index) => {
         if (slide.type !== "image") return null;
         const isActive = index === current;
         const isPrev = index === previous;
+        const isNext = index === (current + 1) % slides.length;
+        
+        // Only render currently visible or transitioning slides plus next slide
+        if (!isActive && !isPrev && !isNext) return null;
 
         return (
           <div
@@ -277,11 +301,12 @@ export function HeroSlideshow() {
                 ? "z-20 opacity-100"
                 : isPrev
                   ? "z-10 opacity-100"
-                  : "z-0 opacity-0"
+                  : "z-0 opacity-0 pointer-events-none"
             )}
             style={{
               transitionDuration: `${TRANSITION_MS}ms`,
               transitionTimingFunction: "ease-in-out",
+              willChange: isActive || isPrev ? "opacity" : "auto",
             }}
           >
             <div

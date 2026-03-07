@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Sparkles, RefreshCw, Plus, Trash2, Edit3, Image as ImageIcon, Video, FileText, Move } from "lucide-react";
+import { Loader2, Sparkles, RefreshCw, Plus, Trash2, Edit3, Image as ImageIcon, Video, FileText, Move, Upload, GripVertical } from "lucide-react";
 import Image from "next/image";
 
 interface ProjectEditFormProps {
@@ -22,11 +22,16 @@ interface SectionEditProps {
   index: number;
   onUpdate: (index: number, section: ProjectSection) => void;
   onDelete: (index: number) => void;
+  onMoveUp?: (index: number) => void;
+  onMoveDown?: (index: number) => void;
+  isFirst?: boolean;
+  isLast?: boolean;
 }
 
-function SectionEditor({ section, index, onUpdate, onDelete }: SectionEditProps) {
+function SectionEditor({ section, index, onUpdate, onDelete, onMoveUp, onMoveDown, isFirst, isLast }: SectionEditProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState(section);
+  const [uploadingMedia, setUploadingMedia] = useState<string | null>(null);
 
   const handleSave = () => {
     onUpdate(index, editData);
@@ -38,6 +43,46 @@ function SectionEditor({ section, index, onUpdate, onDelete }: SectionEditProps)
     setIsEditing(false);
   };
 
+  const handleMediaUpload = async (file: File, mediaType: 'image' | 'video' | 'drawing') => {
+    setUploadingMedia(mediaType);
+    
+    try {
+      if (!supabaseBrowserClient) {
+        throw new Error("Supabase client not available");
+      }
+
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}.${fileExt}`;
+      const filePath = `projects/${editData.id || section.id}/${mediaType}/${fileName}`;
+
+      const { error: uploadError } = await supabaseBrowserClient.storage
+        .from('media')
+        .upload(filePath, file);
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      // Update section with new media path
+      if (section.type === "full_image" && mediaType === 'image') {
+        setEditData({ ...editData, imagePath: filePath });
+      } else if (section.type === "video" && mediaType === 'video') {
+        setEditData({ ...editData, videoPath: filePath });
+      } else if (section.type === "gallery_grid" && mediaType === 'image') {
+        const currentPaths = editData.imagePaths || [];
+        setEditData({ ...editData, imagePaths: [...currentPaths, filePath] });
+      } else if (section.type === "technical_drawings" && mediaType === 'drawing') {
+        const currentPaths = editData.drawingPaths || [];
+        setEditData({ ...editData, drawingPaths: [...currentPaths, filePath] });
+      }
+    } catch (error) {
+      console.error("Error uploading media:", error);
+      alert("Failed to upload media. Please try again.");
+    } finally {
+      setUploadingMedia(null);
+    }
+  };
+
   const renderSectionContent = () => {
     switch (section.type) {
       case "full_image":
@@ -45,7 +90,7 @@ function SectionEditor({ section, index, onUpdate, onDelete }: SectionEditProps)
           <div className="space-y-4">
             <div className="relative aspect-[16/10] w-full bg-sand rounded-lg overflow-hidden">
               <Image
-                src={getProjectMediaUrl(section.imagePath)}
+                src={getProjectMediaUrl(editData.imagePath || section.imagePath)}
                 alt={section.caption || "Project image"}
                 fill
                 className="object-cover"
@@ -66,6 +111,19 @@ function SectionEditor({ section, index, onUpdate, onDelete }: SectionEditProps)
                   onChange={(e) => setEditData({ ...editData, label: e.target.value })}
                   placeholder="Section label"
                 />
+                <Label>Replace Image</Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handleMediaUpload(file, 'image');
+                    }}
+                    className="flex-1"
+                  />
+                  {uploadingMedia === 'image' && <Loader2 className="w-4 h-4 animate-spin" />}
+                </div>
               </div>
             ) : (
               <>
@@ -123,14 +181,28 @@ function SectionEditor({ section, index, onUpdate, onDelete }: SectionEditProps)
         return (
           <div className="space-y-4">
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {section.imagePaths?.map((imgPath, idx) => (
-                <div key={idx} className="relative aspect-square bg-sand rounded-lg overflow-hidden">
+              {(editData.imagePaths || section.imagePaths || []).map((imgPath, idx) => (
+                <div key={idx} className="relative aspect-square bg-sand rounded-lg overflow-hidden group">
                   <Image
                     src={getProjectMediaUrl(imgPath)}
                     alt={`Gallery image ${idx + 1}`}
                     fill
                     className="object-cover"
                   />
+                  {isEditing && (
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => {
+                          const newPaths = (editData.imagePaths || section.imagePaths || []).filter((_, i) => i !== idx);
+                          setEditData({ ...editData, imagePaths: newPaths });
+                        }}
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -142,6 +214,20 @@ function SectionEditor({ section, index, onUpdate, onDelete }: SectionEditProps)
                   onChange={(e) => setEditData({ ...editData, label: e.target.value })}
                   placeholder="Gallery label"
                 />
+                <Label>Add Images</Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={(e) => {
+                      const files = Array.from(e.target.files || []);
+                      files.forEach(file => handleMediaUpload(file, 'image'));
+                    }}
+                    className="flex-1"
+                  />
+                  {uploadingMedia === 'image' && <Loader2 className="w-4 h-4 animate-spin" />}
+                </div>
               </div>
             )}
             {!isEditing && section.label && (
@@ -155,7 +241,7 @@ function SectionEditor({ section, index, onUpdate, onDelete }: SectionEditProps)
           <div className="space-y-4">
             <div className="relative aspect-video bg-black rounded-lg overflow-hidden">
               <video
-                src={getProjectMediaUrl(section.videoPath)}
+                src={getProjectMediaUrl(editData.videoPath || section.videoPath)}
                 controls
                 className="w-full h-full"
                 poster="/placeholder.jpg"
@@ -176,6 +262,19 @@ function SectionEditor({ section, index, onUpdate, onDelete }: SectionEditProps)
                   onChange={(e) => setEditData({ ...editData, label: e.target.value })}
                   placeholder="Video label"
                 />
+                <Label>Replace Video</Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="file"
+                    accept="video/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handleMediaUpload(file, 'video');
+                    }}
+                    className="flex-1"
+                  />
+                  {uploadingMedia === 'video' && <Loader2 className="w-4 h-4 animate-spin" />}
+                </div>
               </div>
             ) : (
               <>
@@ -194,14 +293,28 @@ function SectionEditor({ section, index, onUpdate, onDelete }: SectionEditProps)
         return (
           <div className="space-y-4">
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {section.drawingPaths?.map((drawingPath, idx) => (
-                <div key={idx} className="relative aspect-[4/3] bg-sand rounded-lg overflow-hidden">
+              {(editData.drawingPaths || section.drawingPaths || []).map((drawingPath, idx) => (
+                <div key={idx} className="relative aspect-[4/3] bg-sand rounded-lg overflow-hidden group">
                   <Image
                     src={getProjectMediaUrl(drawingPath)}
                     alt={`Technical drawing ${idx + 1}`}
                     fill
                     className="object-cover"
                   />
+                  {isEditing && (
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => {
+                          const newPaths = (editData.drawingPaths || section.drawingPaths || []).filter((_, i) => i !== idx);
+                          setEditData({ ...editData, drawingPaths: newPaths });
+                        }}
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -220,6 +333,20 @@ function SectionEditor({ section, index, onUpdate, onDelete }: SectionEditProps)
                   placeholder="Technical notes"
                   rows={2}
                 />
+                <Label>Add Drawings</Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={(e) => {
+                      const files = Array.from(e.target.files || []);
+                      files.forEach(file => handleMediaUpload(file, 'drawing'));
+                    }}
+                    className="flex-1"
+                  />
+                  {uploadingMedia === 'drawing' && <Loader2 className="w-4 h-4 animate-spin" />}
+                </div>
               </div>
             )}
             {!isEditing && (
@@ -283,6 +410,7 @@ function SectionEditor({ section, index, onUpdate, onDelete }: SectionEditProps)
       <CardContent className="p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
+            <GripVertical className="w-4 h-4 text-muted-foreground cursor-move" />
             {section.type === "full_image" && <ImageIcon className="w-4 h-4" />}
             {section.type === "text_block" && <FileText className="w-4 h-4" />}
             {section.type === "gallery_grid" && <ImageIcon className="w-4 h-4" />}
@@ -294,6 +422,28 @@ function SectionEditor({ section, index, onUpdate, onDelete }: SectionEditProps)
             </span>
           </div>
           <div className="flex gap-2">
+            {!isFirst && onMoveUp && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onMoveUp(index)}
+                className="flex items-center gap-1"
+              >
+                <Move className="w-3 h-3" />
+                Up
+              </Button>
+            )}
+            {!isLast && onMoveDown && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onMoveDown(index)}
+                className="flex items-center gap-1"
+              >
+                <Move className="w-3 h-3" />
+                Down
+              </Button>
+            )}
             <Button
               variant="outline"
               size="sm"
@@ -332,6 +482,105 @@ function SectionEditor({ section, index, onUpdate, onDelete }: SectionEditProps)
   );
 }
 
+function NewSectionForm({ onAdd }: { onAdd: (section: ProjectSection) => void }) {
+  const [sectionType, setSectionType] = useState<string>("full_image");
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  const createNewSection = () => {
+    const newSection: ProjectSection = {
+      id: `section-${Date.now()}`,
+      type: sectionType as any,
+    };
+
+    // Add default content based on type
+    switch (sectionType) {
+      case "full_image":
+        (newSection as any).imagePath = "";
+        (newSection as any).caption = "";
+        (newSection as any).label = "";
+        break;
+      case "text_block":
+        (newSection as any).heading = "";
+        (newSection as any).body = "";
+        (newSection as any).label = "";
+        break;
+      case "gallery_grid":
+        (newSection as any).imagePaths = [];
+        (newSection as any).label = "";
+        break;
+      case "video":
+        (newSection as any).videoPath = "";
+        (newSection as any).caption = "";
+        (newSection as any).label = "";
+        break;
+      case "technical_drawings":
+        (newSection as any).drawingPaths = [];
+        (newSection as any).notes = "";
+        (newSection as any).label = "";
+        break;
+      case "materials_table":
+        (newSection as any).items = [];
+        (newSection as any).label = "";
+        break;
+    }
+
+    onAdd(newSection);
+    setIsExpanded(false);
+    setSectionType("full_image");
+  };
+
+  return (
+    <Card>
+      <CardContent className="p-6">
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <Plus className="w-4 h-4" />
+            <span className="font-medium">Add New Section</span>
+          </div>
+          
+          {isExpanded ? (
+            <div className="space-y-4">
+              <div>
+                <Label>Section Type</Label>
+                <select
+                  value={sectionType}
+                  onChange={(e) => setSectionType(e.target.value)}
+                  className="w-full p-2 border rounded-md"
+                >
+                  <option value="full_image">Full Width Image</option>
+                  <option value="text_block">Text Block</option>
+                  <option value="gallery_grid">Gallery Grid</option>
+                  <option value="video">Video</option>
+                  <option value="technical_drawings">Technical Drawings</option>
+                  <option value="materials_table">Materials Table</option>
+                </select>
+              </div>
+              
+              <div className="flex gap-2">
+                <Button onClick={createNewSection} size="sm">
+                  Create Section
+                </Button>
+                <Button variant="outline" onClick={() => setIsExpanded(false)} size="sm">
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <Button
+              variant="outline"
+              onClick={() => setIsExpanded(true)}
+              className="w-full"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Section
+            </Button>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function ProjectEditForm({ project }: ProjectEditFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -361,6 +610,61 @@ export default function ProjectEditForm({ project }: ProjectEditFormProps) {
     }));
   };
 
+  const handleAIGeneration = async (field: string, customPrompt?: string) => {
+    setAiLoading(field);
+    
+    try {
+      const response = await fetch("/api/projects/ai-regenerate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          projectId: project.id,
+          field,
+          currentContent: formData[field as keyof typeof formData],
+          customPrompt,
+          projectContext: {
+            title: formData.title,
+            location: formData.location,
+            materials: formData.materials,
+            year: formData.year,
+          }
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to generate content");
+      }
+
+      const data = await response.json();
+      setAiSuggestions(prev => ({
+        ...prev,
+        [field]: data.content
+      }));
+      setShowAiSuggestions(prev => ({
+        ...prev,
+        [field]: true
+      }));
+    } catch (error) {
+      console.error("Error generating content:", error);
+      alert("Failed to generate AI content. Please try again.");
+    } finally {
+      setAiLoading(null);
+    }
+  };
+
+  const applyAiSuggestion = (field: string) => {
+    const suggestion = aiSuggestions[field];
+    if (suggestion) {
+      handleInputChange(field, suggestion);
+      setShowAiSuggestions(prev => ({
+        ...prev,
+        [field]: false
+      }));
+    }
+  };
+
   const handleSectionUpdate = (index: number, updatedSection: ProjectSection) => {
     setSections(prev => {
       const newSections = [...prev];
@@ -372,6 +676,30 @@ export default function ProjectEditForm({ project }: ProjectEditFormProps) {
   const handleSectionDelete = (index: number) => {
     if (confirm("Are you sure you want to delete this section?")) {
       setSections(prev => prev.filter((_, i) => i !== index));
+    }
+  };
+
+  const handleSectionAdd = (newSection: ProjectSection) => {
+    setSections(prev => [...prev, newSection]);
+  };
+
+  const handleSectionMoveUp = (index: number) => {
+    if (index > 0) {
+      setSections(prev => {
+        const newSections = [...prev];
+        [newSections[index], newSections[index - 1]] = [newSections[index - 1], newSections[index]];
+        return newSections;
+      });
+    }
+  };
+
+  const handleSectionMoveDown = (index: number) => {
+    if (index < sections.length - 1) {
+      setSections(prev => {
+        const newSections = [...prev];
+        [newSections[index], newSections[index + 1]] = [newSections[index + 1], newSections[index]];
+        return newSections;
+      });
     }
   };
 
@@ -652,7 +980,7 @@ export default function ProjectEditForm({ project }: ProjectEditFormProps) {
             {sections.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground border-2 border-dashed rounded-lg">
                 <FileText className="w-12 h-12 mx-auto mb-4" />
-                <p>No sections yet. Sections are generated by AI when creating projects.</p>
+                <p>No sections yet. Add your first section below.</p>
               </div>
             ) : (
               sections.map((section, index) => (
@@ -662,9 +990,15 @@ export default function ProjectEditForm({ project }: ProjectEditFormProps) {
                   index={index}
                   onUpdate={handleSectionUpdate}
                   onDelete={handleSectionDelete}
+                  onMoveUp={handleSectionMoveUp}
+                  onMoveDown={handleSectionMoveDown}
+                  isFirst={index === 0}
+                  isLast={index === sections.length - 1}
                 />
               ))
             )}
+            
+            <NewSectionForm onAdd={handleSectionAdd} />
           </div>
         </CardContent>
       </Card>

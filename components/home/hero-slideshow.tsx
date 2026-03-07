@@ -219,15 +219,11 @@ export function HeroSlideshow() {
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
     >
-      {/* Video slides - only mount current, previous, and next for performance */}
+      {/* Video slides - always rendered to prevent hydration mismatch */}
       {slides.map((slide, index) => {
         if (slide.type !== "video") return null;
         const isActive = index === current;
         const isPrev = index === previous;
-        const isNext = index === (current + 1) % slides.length;
-        
-        // Only render currently visible or transitioning slides plus next slide
-        if (!isActive && !isPrev && !isNext) return null;
         
         return (
           <div
@@ -282,15 +278,11 @@ export function HeroSlideshow() {
         );
       })}
 
-      {/* Image slides - only mount current, previous, and next for performance */}
+      {/* Image slides - always rendered to prevent hydration mismatch */}
       {slides.map((slide, index) => {
         if (slide.type !== "image") return null;
         const isActive = index === current;
         const isPrev = index === previous;
-        const isNext = index === (current + 1) % slides.length;
-        
-        // Only render currently visible or transitioning slides plus next slide
-        if (!isActive && !isPrev && !isNext) return null;
 
         return (
           <div

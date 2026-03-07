@@ -492,35 +492,53 @@ function NewSectionForm({ onAdd }: { onAdd: (section: ProjectSection) => void })
       type: sectionType as any,
     };
 
-    // Add default content based on type
+    // Add default content based on type to match AI-generated structure
     switch (sectionType) {
       case "full_image":
-        (newSection as any).imagePath = "";
-        (newSection as any).caption = "";
-        (newSection as any).label = "";
+        Object.assign(newSection, {
+          imagePath: "",
+          caption: "A view of the architectural project showcasing design excellence and spatial quality.",
+          label: "Project Detail"
+        });
         break;
       case "text_block":
-        (newSection as any).heading = "";
-        (newSection as any).body = "";
-        (newSection as any).label = "";
+        Object.assign(newSection, {
+          heading: "Architectural Detail",
+          body: "This section highlights key aspects of the project's design philosophy and execution. The architectural approach emphasizes both functionality and aesthetic appeal, creating spaces that serve their purpose while inspiring those who inhabit them.",
+          label: "Detail"
+        });
         break;
       case "gallery_grid":
-        (newSection as any).imagePaths = [];
-        (newSection as any).label = "";
+        Object.assign(newSection, {
+          imagePaths: [],
+          label: "Gallery"
+        });
         break;
       case "video":
-        (newSection as any).videoPath = "";
-        (newSection as any).caption = "";
-        (newSection as any).label = "";
+        Object.assign(newSection, {
+          videoPath: "",
+          caption: "Experience the project through this immersive visual walkthrough.",
+          label: "Video"
+        });
         break;
       case "technical_drawings":
-        (newSection as any).drawingPaths = [];
-        (newSection as any).notes = "";
-        (newSection as any).label = "";
+        Object.assign(newSection, {
+          drawingPaths: [],
+          notes: "Technical drawings illustrate the project's structural and spatial organization, providing insight into the architectural planning and execution.",
+          label: "Drawings"
+        });
         break;
       case "materials_table":
-        (newSection as any).items = [];
-        (newSection as any).label = "";
+        Object.assign(newSection, {
+          items: [
+            {
+              name: "Material Name",
+              description: "Description of material properties and application",
+              role: "Primary"
+            }
+          ],
+          label: "Materials"
+        });
         break;
     }
 

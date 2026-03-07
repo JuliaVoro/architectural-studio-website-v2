@@ -1,5 +1,48 @@
 import type { Metadata } from "next";
+import { supabaseServerClient } from "@/lib/supabase-client";
+import type { Project } from "@/lib/projects";
 import { SystemsGrid } from "@/components/systems/systems-grid";
+
+async function getProjects(): Promise<Project[]> {
+  if (!supabaseServerClient) {
+    return [];
+  }
+
+  const { data, error } = await supabaseServerClient
+    .from("projects")
+    .select("*")
+    .eq("status", "published")
+    .order("featured", { ascending: false })
+    .order("created_at", { ascending: false });
+
+  if (error || !data) {
+    console.error("Error loading projects:", error);
+    return [];
+  }
+
+  return data.map((row: any) => ({
+    id: row.id,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+    status: row.status,
+    featured: row.featured,
+    slug: row.slug,
+    keyFacts: {
+      title: row.title,
+      location: row.location ?? undefined,
+      year: row.year ?? undefined,
+      size: row.size ?? undefined,
+      materials: row.materials ?? undefined,
+      client: row.client ?? undefined,
+    },
+    notes: row.notes ?? undefined,
+    heroImagePath: row.hero_image_path ?? undefined,
+    introText: row.intro_text ?? undefined,
+    story: row.story ?? undefined,
+    sections: row.sections ?? undefined,
+    aiRawResponse: row.ai_raw_response ?? undefined,
+  }));
+}
 
 export const metadata: Metadata = {
   title: "Systems",
@@ -7,7 +50,9 @@ export const metadata: Metadata = {
     "Selected spatial-service systems. Case studies categorized by strategic system type.",
 };
 
-export default function SystemsPage() {
+export default async function SystemsPage() {
+  const projects = await getProjects();
+
   return (
     <section className="pt-32 pb-24 lg:pb-32">
       <div className="mx-auto max-w-[1400px] px-6 lg:px-12">
@@ -31,7 +76,7 @@ export default function SystemsPage() {
         </div>
 
         {/* Grid */}
-        <SystemsGrid />
+        <SystemsGrid projects={projects} />
       </div>
     </section>
   );

@@ -3,41 +3,15 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-
-const cases = [
-  {
-    slug: "flow-optimization",
-    title: "Flow Optimization System",
-    summary:
-      "Reconfigured spatial sequences to reduce queue friction and increase throughput by 34% across peak hours.",
-    image: "/images/case-flow.jpg",
-  },
-  {
-    slug: "behavior-shaping",
-    title: "Behavior-Shaping Environment",
-    summary:
-      "Material and spatial cues designed to guide intuitive wayfinding, increasing dwell time and engagement.",
-    image: "/images/case-behavior.jpg",
-  },
-  {
-    slug: "hybrid-model",
-    title: "Hybrid Physical-Digital Model",
-    summary:
-      "An integrated interface layer merging physical space with digital touchpoints for seamless service delivery.",
-    image: "/images/case-hybrid.jpg",
-  },
-  {
-    slug: "operational-transformation",
-    title: "Operational Transformation",
-    summary:
-      "Full-scale spatial-service redesign that increased revenue per square meter by 28% within six months.",
-    image: "/images/case-operations.jpg",
-  },
-];
+import { supabaseBrowserClient } from "@/lib/supabase-client";
+import type { Project } from "@/lib/projects";
+import { getProjectMediaUrl } from "@/lib/projects";
 
 export function SelectedSystems() {
   const sectionRef = useRef<HTMLElement>(null);
   const [isVisible, setIsVisible] = useState(false);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -48,6 +22,57 @@ export function SelectedSystems() {
     );
     if (sectionRef.current) observer.observe(sectionRef.current);
     return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    async function loadProjects() {
+      if (!supabaseBrowserClient) {
+        setLoading(false);
+        return;
+      }
+
+      const { data, error } = await supabaseBrowserClient
+        .from("projects")
+        .select("*")
+        .eq("status", "published")
+        .order("featured", { ascending: false })
+        .order("created_at", { ascending: false })
+        .limit(4);
+
+      if (error) {
+        console.error("Error loading projects:", error);
+        setLoading(false);
+        return;
+      }
+
+      const mappedProjects: Project[] = data.map((row: any) => ({
+        id: row.id,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
+        status: row.status,
+        featured: row.featured,
+        slug: row.slug,
+        keyFacts: {
+          title: row.title,
+          location: row.location ?? undefined,
+          year: row.year ?? undefined,
+          size: row.size ?? undefined,
+          materials: row.materials ?? undefined,
+          client: row.client ?? undefined,
+        },
+        notes: row.notes ?? undefined,
+        heroImagePath: row.hero_image_path ?? undefined,
+        introText: row.intro_text ?? undefined,
+        story: row.story ?? undefined,
+        sections: row.sections ?? undefined,
+        aiRawResponse: row.ai_raw_response ?? undefined,
+      }));
+
+      setProjects(mappedProjects);
+      setLoading(false);
+    }
+
+    loadProjects();
   }, []);
 
   return (
@@ -63,7 +88,7 @@ export function SelectedSystems() {
             </h2>
           </div>
           <Link
-            href="/systems"
+            href="/projects"
             className="hidden text-sm text-muted-foreground transition-colors duration-300 hover:text-foreground md:inline-block"
           >
             {"View All →"}
@@ -71,40 +96,66 @@ export function SelectedSystems() {
         </div>
 
         <div className="mt-16 grid grid-cols-1 gap-8 md:grid-cols-2">
-          {cases.map((item, index) => (
-            <Link
-              href={`/systems/${item.slug}`}
-              key={item.slug}
-              className="group"
-              style={{
-                opacity: isVisible ? 1 : 0,
-                transform: isVisible ? "translateY(0)" : "translateY(20px)",
-                transition: `opacity 0.7s ease ${index * 0.15}s, transform 0.7s ease ${index * 0.15}s`,
-              }}
-            >
-              <div className="relative aspect-[16/10] w-full overflow-hidden bg-sand">
-                <Image
-                  src={item.image}
-                  alt={item.title}
-                  fill
-                  className="object-cover transition-transform duration-700 group-hover:scale-[1.02]"
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                />
+          {loading ? (
+            // Loading skeleton
+            Array.from({ length: 4 }).map((_, index) => (
+              <div
+                key={`skeleton-${index}`}
+                className="group"
+                style={{
+                  opacity: isVisible ? 1 : 0,
+                  transform: isVisible ? "translateY(0)" : "translateY(20px)",
+                  transition: `opacity 0.7s ease ${index * 0.15}s, transform 0.7s ease ${index * 0.15}s`,
+                }}
+              >
+                <div className="relative aspect-[16/10] w-full overflow-hidden bg-sand animate-pulse" />
+                <div className="mt-5">
+                  <div className="h-6 w-3/4 bg-sand animate-pulse rounded" />
+                  <div className="mt-2 h-4 w-full bg-sand animate-pulse rounded" />
+                  <div className="mt-1 h-4 w-2/3 bg-sand animate-pulse rounded" />
+                </div>
               </div>
-              <div className="mt-5">
-                <h3 className="text-base font-medium text-foreground">
-                  {item.title}
-                </h3>
-                <p className="mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">
-                  {item.summary}
-                </p>
-              </div>
-            </Link>
-          ))}
+            ))
+          ) : projects.length > 0 ? (
+            projects.map((project, index) => (
+              <Link
+                href={`/projects/${project.slug}`}
+                key={project.id}
+                className="group"
+                style={{
+                  opacity: isVisible ? 1 : 0,
+                  transform: isVisible ? "translateY(0)" : "translateY(20px)",
+                  transition: `opacity 0.7s ease ${index * 0.15}s, transform 0.7s ease ${index * 0.15}s`,
+                }}
+              >
+                <div className="relative aspect-[16/10] w-full overflow-hidden bg-sand">
+                  <Image
+                    src={project.heroImagePath ? getProjectMediaUrl(project.heroImagePath) : "/placeholder.jpg"}
+                    alt={project.keyFacts.title}
+                    fill
+                    className="object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                  />
+                </div>
+                <div className="mt-5">
+                  <h3 className="text-base font-medium text-foreground">
+                    {project.keyFacts.title}
+                  </h3>
+                  <p className="mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">
+                    {project.introText}
+                  </p>
+                </div>
+              </Link>
+            ))
+          ) : (
+            <div className="col-span-full text-center py-12">
+              <p className="text-muted-foreground">No projects available yet.</p>
+            </div>
+          )}
         </div>
 
         <Link
-          href="/systems"
+          href="/projects"
           className="mt-10 inline-block text-sm text-muted-foreground transition-colors duration-300 hover:text-foreground md:hidden"
         >
           {"View All →"}

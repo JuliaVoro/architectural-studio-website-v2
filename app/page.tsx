@@ -5,7 +5,7 @@ import { SelectedSystems } from "@/components/home/selected-systems";
 import { Outcomes } from "@/components/home/outcomes";
 import { Philosophy } from "@/components/home/philosophy";
 
-export default function HomePage() {
+export default async function HomePage() {
   return (
     <>
       <Hero />

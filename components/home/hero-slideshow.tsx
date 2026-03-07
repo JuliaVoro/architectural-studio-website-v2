@@ -55,13 +55,6 @@ const slides: Slide[] = [
     location: "Tbilisi, Georgia",
   },
   {
-    type: "image",
-    src: "/images/work.png",
-    title: "Work Project",
-    subtitle: "Commercial",
-    location: "Tbilisi, Georgia",
-  },
-  {
     type: "video",
     src: "/videos/office.mp4",
     poster: "/images/poster-office.jpg",

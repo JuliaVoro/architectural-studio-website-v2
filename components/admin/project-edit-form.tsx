@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Loader2, Sparkles, RefreshCw } from "lucide-react";
 
 interface ProjectEditFormProps {
   project: Project;
@@ -18,6 +19,10 @@ export default function ProjectEditForm({ project }: ProjectEditFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [aiLoading, setAiLoading] = useState<string | null>(null);
+  const [aiSuggestions, setAiSuggestions] = useState<{ [key: string]: string }>({});
+  const [showAiSuggestions, setShowAiSuggestions] = useState<{ [key: string]: boolean }>({});
+  
   const [formData, setFormData] = useState({
     title: project.keyFacts.title,
     location: project.keyFacts.location || "",
@@ -35,6 +40,61 @@ export default function ProjectEditForm({ project }: ProjectEditFormProps) {
       ...prev,
       [field]: value,
     }));
+  };
+
+  const handleAIGeneration = async (field: string, customPrompt?: string) => {
+    setAiLoading(field);
+    
+    try {
+      const response = await fetch("/api/projects/ai-regenerate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          projectId: project.id,
+          field,
+          currentContent: formData[field as keyof typeof formData],
+          customPrompt,
+          projectContext: {
+            title: formData.title,
+            location: formData.location,
+            materials: formData.materials,
+            year: formData.year,
+          }
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to generate content");
+      }
+
+      const data = await response.json();
+      setAiSuggestions(prev => ({
+        ...prev,
+        [field]: data.content
+      }));
+      setShowAiSuggestions(prev => ({
+        ...prev,
+        [field]: true
+      }));
+    } catch (error) {
+      console.error("Error generating content:", error);
+      alert("Failed to generate AI content. Please try again.");
+    } finally {
+      setAiLoading(null);
+    }
+  };
+
+  const applyAiSuggestion = (field: string) => {
+    const suggestion = aiSuggestions[field];
+    if (suggestion) {
+      handleInputChange(field, suggestion);
+      setShowAiSuggestions(prev => ({
+        ...prev,
+        [field]: false
+      }));
+    }
   };
 
   const handleSave = async () => {
@@ -148,14 +208,33 @@ export default function ProjectEditForm({ project }: ProjectEditFormProps) {
         </CardContent>
       </Card>
 
-      {/* Content */}
+      {/* Content with AI Assistance */}
       <Card>
         <CardHeader>
-          <CardTitle>Content</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            Content
+            <Sparkles className="w-4 h-4 text-blue-500" />
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           <div>
-            <Label htmlFor="introText">Introduction Text</Label>
+            <div className="flex items-center justify-between mb-2">
+              <Label htmlFor="introText">Introduction Text</Label>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleAIGeneration("introText")}
+                disabled={aiLoading === "introText"}
+                className="flex items-center gap-2"
+              >
+                {aiLoading === "introText" ? (
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                ) : (
+                  <RefreshCw className="w-3 h-3" />
+                )}
+                AI Generate
+              </Button>
+            </div>
             <Textarea
               id="introText"
               value={formData.introText}
@@ -163,10 +242,51 @@ export default function ProjectEditForm({ project }: ProjectEditFormProps) {
               placeholder="Brief introduction to the project..."
               rows={3}
             />
+            {showAiSuggestions.introText && aiSuggestions.introText && (
+              <div className="border border-blue-200 rounded-lg p-4 bg-blue-50">
+                <div className="flex justify-between items-start mb-2">
+                  <span className="text-sm font-medium text-blue-700">AI Suggestion:</span>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      onClick={() => applyAiSuggestion("introText")}
+                      className="text-xs"
+                    >
+                      Apply
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setShowAiSuggestions(prev => ({ ...prev, introText: false }))}
+                      className="text-xs"
+                    >
+                      Dismiss
+                    </Button>
+                  </div>
+                </div>
+                <p className="text-sm text-blue-600">{aiSuggestions.introText}</p>
+              </div>
+            )}
           </div>
           
           <div>
-            <Label htmlFor="story">Story</Label>
+            <div className="flex items-center justify-between mb-2">
+              <Label htmlFor="story">Story</Label>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleAIGeneration("story")}
+                disabled={aiLoading === "story"}
+                className="flex items-center gap-2"
+              >
+                {aiLoading === "story" ? (
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                ) : (
+                  <RefreshCw className="w-3 h-3" />
+                )}
+                AI Generate
+              </Button>
+            </div>
             <Textarea
               id="story"
               value={formData.story}
@@ -174,6 +294,31 @@ export default function ProjectEditForm({ project }: ProjectEditFormProps) {
               placeholder="Detailed project story..."
               rows={8}
             />
+            {showAiSuggestions.story && aiSuggestions.story && (
+              <div className="border border-blue-200 rounded-lg p-4 bg-blue-50">
+                <div className="flex justify-between items-start mb-2">
+                  <span className="text-sm font-medium text-blue-700">AI Suggestion:</span>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      onClick={() => applyAiSuggestion("story")}
+                      className="text-xs"
+                    >
+                      Apply
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setShowAiSuggestions(prev => ({ ...prev, story: false }))}
+                      className="text-xs"
+                    >
+                      Dismiss
+                    </Button>
+                  </div>
+                </div>
+                <p className="text-sm text-blue-600 whitespace-pre-wrap">{aiSuggestions.story}</p>
+              </div>
+            )}
           </div>
           
           <div>

@@ -63,17 +63,17 @@ function SectionEditor({ section, index, onUpdate, onDelete, onMoveUp, onMoveDow
         throw uploadError;
       }
 
-      // Update section with new media path
+      // Update section with new media path - use type assertion for dynamic properties
       if (section.type === "full_image" && mediaType === 'image') {
-        setEditData({ ...editData, imagePath: filePath });
+        setEditData({ ...editData, imagePath: filePath } as any);
       } else if (section.type === "video" && mediaType === 'video') {
-        setEditData({ ...editData, videoPath: filePath });
+        setEditData({ ...editData, videoPath: filePath } as any);
       } else if (section.type === "gallery_grid" && mediaType === 'image') {
-        const currentPaths = editData.imagePaths || [];
-        setEditData({ ...editData, imagePaths: [...currentPaths, filePath] });
+        const currentPaths = (editData as any).imagePaths || [];
+        setEditData({ ...editData, imagePaths: [...currentPaths, filePath] } as any);
       } else if (section.type === "technical_drawings" && mediaType === 'drawing') {
-        const currentPaths = editData.drawingPaths || [];
-        setEditData({ ...editData, drawingPaths: [...currentPaths, filePath] });
+        const currentPaths = (editData as any).drawingPaths || [];
+        setEditData({ ...editData, drawingPaths: [...currentPaths, filePath] } as any);
       }
     } catch (error) {
       console.error("Error uploading media:", error);
@@ -90,8 +90,8 @@ function SectionEditor({ section, index, onUpdate, onDelete, onMoveUp, onMoveDow
           <div className="space-y-4">
             <div className="relative aspect-[16/10] w-full bg-sand rounded-lg overflow-hidden">
               <Image
-                src={getProjectMediaUrl(editData.imagePath || section.imagePath)}
-                alt={section.caption || "Project image"}
+                src={getProjectMediaUrl((editData as any).imagePath || (section as any).imagePath)}
+                alt={(section as any).caption || "Project image"}
                 fill
                 className="object-cover"
               />
@@ -100,15 +100,15 @@ function SectionEditor({ section, index, onUpdate, onDelete, onMoveUp, onMoveDow
               <div className="space-y-3">
                 <Label>Caption</Label>
                 <Textarea
-                  value={editData.caption || ""}
-                  onChange={(e) => setEditData({ ...editData, caption: e.target.value })}
+                  value={(editData as any).caption || ""}
+                  onChange={(e) => setEditData({ ...editData, caption: e.target.value } as any)}
                   placeholder="Image caption"
                   rows={2}
                 />
                 <Label>Label</Label>
                 <Input
-                  value={editData.label || ""}
-                  onChange={(e) => setEditData({ ...editData, label: e.target.value })}
+                  value={(editData as any).label || ""}
+                  onChange={(e) => setEditData({ ...editData, label: e.target.value } as any)}
                   placeholder="Section label"
                 />
                 <Label>Replace Image</Label>
@@ -127,11 +127,11 @@ function SectionEditor({ section, index, onUpdate, onDelete, onMoveUp, onMoveDow
               </div>
             ) : (
               <>
-                {section.label && (
-                  <p className="text-sm text-muted-foreground">{section.label}</p>
+                {(section as any).label && (
+                  <p className="text-sm text-muted-foreground">{(section as any).label}</p>
                 )}
-                {section.caption && (
-                  <p className="text-sm text-neutral-600">{section.caption}</p>
+                {(section as any).caption && (
+                  <p className="text-sm text-neutral-600">{(section as any).caption}</p>
                 )}
               </>
             )}
@@ -145,33 +145,33 @@ function SectionEditor({ section, index, onUpdate, onDelete, onMoveUp, onMoveDow
               <div className="space-y-3">
                 <Label>Heading</Label>
                 <Input
-                  value={editData.heading || ""}
-                  onChange={(e) => setEditData({ ...editData, heading: e.target.value })}
+                  value={(editData as any).heading || ""}
+                  onChange={(e) => setEditData({ ...editData, heading: e.target.value } as any)}
                   placeholder="Section heading"
                 />
                 <Label>Body</Label>
                 <Textarea
-                  value={editData.body || ""}
-                  onChange={(e) => setEditData({ ...editData, body: e.target.value })}
+                  value={(editData as any).body || ""}
+                  onChange={(e) => setEditData({ ...editData, body: e.target.value } as any)}
                   placeholder="Section content"
                   rows={6}
                 />
                 <Label>Label</Label>
                 <Input
-                  value={editData.label || ""}
-                  onChange={(e) => setEditData({ ...editData, label: e.target.value })}
+                  value={(editData as any).label || ""}
+                  onChange={(e) => setEditData({ ...editData, label: e.target.value } as any)}
                   placeholder="Section label"
                 />
               </div>
             ) : (
               <div>
-                {section.heading && (
-                  <h3 className="font-serif text-2xl text-neutral-900 mb-4">{section.heading}</h3>
+                {(section as any).heading && (
+                  <h3 className="font-serif text-2xl text-neutral-900 mb-4">{(section as any).heading}</h3>
                 )}
-                {section.label && (
-                  <p className="text-sm text-muted-foreground mb-2">{section.label}</p>
+                {(section as any).label && (
+                  <p className="text-sm text-muted-foreground mb-2">{(section as any).label}</p>
                 )}
-                <p className="text-neutral-700 leading-relaxed">{section.body}</p>
+                <p className="text-neutral-700 leading-relaxed">{(section as any).body}</p>
               </div>
             )}
           </div>
@@ -181,7 +181,7 @@ function SectionEditor({ section, index, onUpdate, onDelete, onMoveUp, onMoveDow
         return (
           <div className="space-y-4">
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {(editData.imagePaths || section.imagePaths || []).map((imgPath, idx) => (
+              {((editData as any).imagePaths || (section as any).imagePaths || []).map((imgPath: string, idx: number) => (
                 <div key={idx} className="relative aspect-square bg-sand rounded-lg overflow-hidden group">
                   <Image
                     src={getProjectMediaUrl(imgPath)}
@@ -195,8 +195,8 @@ function SectionEditor({ section, index, onUpdate, onDelete, onMoveUp, onMoveDow
                         variant="destructive"
                         size="sm"
                         onClick={() => {
-                          const newPaths = (editData.imagePaths || section.imagePaths || []).filter((_, i) => i !== idx);
-                          setEditData({ ...editData, imagePaths: newPaths });
+                          const newPaths = ((editData as any).imagePaths || (section as any).imagePaths || []).filter((_: any, i: number) => i !== idx);
+                          setEditData({ ...editData, imagePaths: newPaths } as any);
                         }}
                       >
                         <Trash2 className="w-3 h-3" />
@@ -210,8 +210,8 @@ function SectionEditor({ section, index, onUpdate, onDelete, onMoveUp, onMoveDow
               <div className="space-y-3">
                 <Label>Label</Label>
                 <Input
-                  value={editData.label || ""}
-                  onChange={(e) => setEditData({ ...editData, label: e.target.value })}
+                  value={(editData as any).label || ""}
+                  onChange={(e) => setEditData({ ...editData, label: e.target.value } as any)}
                   placeholder="Gallery label"
                 />
                 <Label>Add Images</Label>
@@ -230,8 +230,8 @@ function SectionEditor({ section, index, onUpdate, onDelete, onMoveUp, onMoveDow
                 </div>
               </div>
             )}
-            {!isEditing && section.label && (
-              <p className="text-sm text-muted-foreground">{section.label}</p>
+            {!isEditing && (section as any).label && (
+              <p className="text-sm text-muted-foreground">{(section as any).label}</p>
             )}
           </div>
         );
@@ -241,7 +241,7 @@ function SectionEditor({ section, index, onUpdate, onDelete, onMoveUp, onMoveDow
           <div className="space-y-4">
             <div className="relative aspect-video bg-black rounded-lg overflow-hidden">
               <video
-                src={getProjectMediaUrl(editData.videoPath || section.videoPath)}
+                src={getProjectMediaUrl((editData as any).videoPath || (section as any).videoPath)}
                 controls
                 className="w-full h-full"
                 poster="/placeholder.jpg"
@@ -251,15 +251,15 @@ function SectionEditor({ section, index, onUpdate, onDelete, onMoveUp, onMoveDow
               <div className="space-y-3">
                 <Label>Caption</Label>
                 <Textarea
-                  value={editData.caption || ""}
-                  onChange={(e) => setEditData({ ...editData, caption: e.target.value })}
+                  value={(editData as any).caption || ""}
+                  onChange={(e) => setEditData({ ...editData, caption: e.target.value } as any)}
                   placeholder="Video caption"
                   rows={2}
                 />
                 <Label>Label</Label>
                 <Input
-                  value={editData.label || ""}
-                  onChange={(e) => setEditData({ ...editData, label: e.target.value })}
+                  value={(editData as any).label || ""}
+                  onChange={(e) => setEditData({ ...editData, label: e.target.value } as any)}
                   placeholder="Video label"
                 />
                 <Label>Replace Video</Label>
@@ -278,11 +278,11 @@ function SectionEditor({ section, index, onUpdate, onDelete, onMoveUp, onMoveDow
               </div>
             ) : (
               <>
-                {section.label && (
-                  <p className="text-sm text-muted-foreground">{section.label}</p>
+                {(section as any).label && (
+                  <p className="text-sm text-muted-foreground">{(section as any).label}</p>
                 )}
-                {section.caption && (
-                  <p className="text-sm text-neutral-600">{section.caption}</p>
+                {(section as any).caption && (
+                  <p className="text-sm text-neutral-600">{(section as any).caption}</p>
                 )}
               </>
             )}
@@ -293,7 +293,7 @@ function SectionEditor({ section, index, onUpdate, onDelete, onMoveUp, onMoveDow
         return (
           <div className="space-y-4">
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {(editData.drawingPaths || section.drawingPaths || []).map((drawingPath, idx) => (
+              {((editData as any).drawingPaths || (section as any).drawingPaths || []).map((drawingPath: string, idx: number) => (
                 <div key={idx} className="relative aspect-[4/3] bg-sand rounded-lg overflow-hidden group">
                   <Image
                     src={getProjectMediaUrl(drawingPath)}
@@ -307,8 +307,8 @@ function SectionEditor({ section, index, onUpdate, onDelete, onMoveUp, onMoveDow
                         variant="destructive"
                         size="sm"
                         onClick={() => {
-                          const newPaths = (editData.drawingPaths || section.drawingPaths || []).filter((_, i) => i !== idx);
-                          setEditData({ ...editData, drawingPaths: newPaths });
+                          const newPaths = ((editData as any).drawingPaths || (section as any).drawingPaths || []).filter((_: any, i: number) => i !== idx);
+                          setEditData({ ...editData, drawingPaths: newPaths } as any);
                         }}
                       >
                         <Trash2 className="w-3 h-3" />
@@ -322,14 +322,14 @@ function SectionEditor({ section, index, onUpdate, onDelete, onMoveUp, onMoveDow
               <div className="space-y-3">
                 <Label>Label</Label>
                 <Input
-                  value={editData.label || ""}
-                  onChange={(e) => setEditData({ ...editData, label: e.target.value })}
+                  value={(editData as any).label || ""}
+                  onChange={(e) => setEditData({ ...editData, label: e.target.value } as any)}
                   placeholder="Drawings label"
                 />
                 <Label>Notes</Label>
                 <Textarea
-                  value={editData.notes || ""}
-                  onChange={(e) => setEditData({ ...editData, notes: e.target.value })}
+                  value={(editData as any).notes || ""}
+                  onChange={(e) => setEditData({ ...editData, notes: e.target.value } as any)}
                   placeholder="Technical notes"
                   rows={2}
                 />
@@ -351,11 +351,11 @@ function SectionEditor({ section, index, onUpdate, onDelete, onMoveUp, onMoveDow
             )}
             {!isEditing && (
               <>
-                {section.label && (
-                  <p className="text-sm text-muted-foreground">{section.label}</p>
+                {(section as any).label && (
+                  <p className="text-sm text-muted-foreground">{(section as any).label}</p>
                 )}
-                {section.notes && (
-                  <p className="text-sm text-neutral-600">{section.notes}</p>
+                {(section as any).notes && (
+                  <p className="text-sm text-neutral-600">{(section as any).notes}</p>
                 )}
               </>
             )}
@@ -366,7 +366,7 @@ function SectionEditor({ section, index, onUpdate, onDelete, onMoveUp, onMoveDow
         return (
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {section.items?.map((item, idx) => (
+              {((section as any).items || []).map((item: any, idx: number) => (
                 <div key={idx} className="border-b border-neutral-200 pb-4">
                   <div className="flex justify-between items-start">
                     <div>
@@ -388,14 +388,14 @@ function SectionEditor({ section, index, onUpdate, onDelete, onMoveUp, onMoveDow
               <div className="space-y-3">
                 <Label>Label</Label>
                 <Input
-                  value={editData.label || ""}
-                  onChange={(e) => setEditData({ ...editData, label: e.target.value })}
+                  value={(editData as any).label || ""}
+                  onChange={(e) => setEditData({ ...editData, label: e.target.value } as any)}
                   placeholder="Materials label"
                 />
               </div>
             )}
-            {!isEditing && section.label && (
-              <p className="text-sm text-muted-foreground">{section.label}</p>
+            {!isEditing && (section as any).label && (
+              <p className="text-sm text-muted-foreground">{(section as any).label}</p>
             )}
           </div>
         );
@@ -487,9 +487,9 @@ function NewSectionForm({ onAdd }: { onAdd: (section: ProjectSection) => void })
   const [isExpanded, setIsExpanded] = useState(false);
 
   const createNewSection = () => {
-    const newSection: ProjectSection = {
+    const newSection: any = {
       id: `section-${Date.now()}`,
-      type: sectionType as any,
+      type: sectionType,
     };
 
     // Add default content based on type to match AI-generated structure
@@ -497,14 +497,14 @@ function NewSectionForm({ onAdd }: { onAdd: (section: ProjectSection) => void })
       case "full_image":
         Object.assign(newSection, {
           imagePath: "",
-          caption: "A view of the architectural project showcasing design excellence and spatial quality.",
+          caption: "A view of architectural project showcasing design excellence and spatial quality.",
           label: "Project Detail"
         });
         break;
       case "text_block":
         Object.assign(newSection, {
           heading: "Architectural Detail",
-          body: "This section highlights key aspects of the project's design philosophy and execution. The architectural approach emphasizes both functionality and aesthetic appeal, creating spaces that serve their purpose while inspiring those who inhabit them.",
+          body: "This section highlights key aspects of project's design philosophy and execution. The architectural approach emphasizes both functionality and aesthetic appeal, creating spaces that serve their purpose while inspiring those who inhabit them.",
           label: "Detail"
         });
         break;
@@ -524,7 +524,7 @@ function NewSectionForm({ onAdd }: { onAdd: (section: ProjectSection) => void })
       case "technical_drawings":
         Object.assign(newSection, {
           drawingPaths: [],
-          notes: "Technical drawings illustrate the project's structural and spatial organization, providing insight into the architectural planning and execution.",
+          notes: "Technical drawings illustrate the project's structural and spatial organization, providing insight into architectural planning and execution.",
           label: "Drawings"
         });
         break;
@@ -607,6 +607,7 @@ export default function ProjectEditForm({ project }: ProjectEditFormProps) {
   const [aiSuggestions, setAiSuggestions] = useState<{ [key: string]: string }>({});
   const [showAiSuggestions, setShowAiSuggestions] = useState<{ [key: string]: boolean }>({});
   const [sections, setSections] = useState<ProjectSection[]>(project.sections || []);
+  const [uploadingHeroImage, setUploadingHeroImage] = useState(false);
   
   const [formData, setFormData] = useState({
     title: project.keyFacts.title,
@@ -620,6 +621,39 @@ export default function ProjectEditForm({ project }: ProjectEditFormProps) {
     story: project.story || "",
     heroImagePath: project.heroImagePath || "",
   });
+
+  const handleHeroImageUpload = async (file: File) => {
+    setUploadingHeroImage(true);
+    
+    try {
+      if (!supabaseBrowserClient) {
+        throw new Error("Supabase client not available");
+      }
+
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}.${fileExt}`;
+      const filePath = `projects/${project.id}/hero/${fileName}`;
+
+      const { error: uploadError } = await supabaseBrowserClient.storage
+        .from('project-media')
+        .upload(filePath, file);
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      // Update form with new hero image path
+      setFormData(prev => ({
+        ...prev,
+        heroImagePath: filePath
+      }));
+    } catch (error) {
+      console.error("Error uploading hero image:", error);
+      alert("Failed to upload hero image. Please try again.");
+    } finally {
+      setUploadingHeroImage(false);
+    }
+  };
 
   const handleInputChange = (field: string, value: string | number) => {
     setFormData(prev => ({
@@ -734,7 +768,7 @@ export default function ProjectEditForm({ project }: ProjectEditFormProps) {
         .update({
           title: formData.title,
           location: formData.location || null,
-          year: formData.year ? parseInt(formData.year) : null,
+          year: formData.year ? parseInt(String(formData.year)) : null,
           size: formData.size || null,
           materials: formData.materials || null,
           client: formData.client || null,
@@ -857,6 +891,21 @@ export default function ProjectEditForm({ project }: ProjectEditFormProps) {
             </div>
             <div className="text-sm text-muted-foreground">
               Current hero image: {formData.heroImagePath || "No hero image set"}
+            </div>
+            <div className="space-y-3">
+              <Label>Replace Hero Image</Label>
+              <div className="flex items-center gap-2">
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleHeroImageUpload(file);
+                  }}
+                  className="flex-1"
+                />
+                {uploadingHeroImage && <Loader2 className="w-4 h-4 animate-spin" />}
+              </div>
             </div>
           </div>
         </CardContent>
@@ -1023,20 +1072,35 @@ export default function ProjectEditForm({ project }: ProjectEditFormProps) {
 
       {/* Actions */}
       <div className="flex justify-between items-center">
-        <Button
-          variant="outline"
-          onClick={() => router.push("/admin/projects")}
-          disabled={saving}
-        >
-          Cancel
-        </Button>
-        
         <div className="flex gap-3">
+          <div className="text-sm text-muted-foreground">
+            {sections.length} section{sections.length !== 1 ? 's' : ''} • {sections.filter(s => (s as any).imagePaths?.length > 0 || (s as any).drawingPaths?.length > 0 || (s as any).videoPath).length} media files
+          </div>
+        </div>
+        <div className="flex gap-3">
+          <Button
+            variant="outline"
+            onClick={() => router.push("/admin/projects")}
+            disabled={saving}
+          >
+            Cancel
+          </Button>
+          
           <Button
             onClick={handleSave}
             disabled={saving}
+            className="min-w-32"
           >
-            {saving ? "Saving..." : "Save Changes"}
+            {saving ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              <>
+                Save Changes
+              </>
+            )}
           </Button>
         </div>
       </div>

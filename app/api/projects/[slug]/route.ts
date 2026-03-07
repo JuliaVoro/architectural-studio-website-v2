@@ -66,3 +66,91 @@ export async function GET(
   return NextResponse.json({ project });
 }
 
+export async function POST(
+  request: NextRequest,
+  context: { params: Promise<{ slug: string }> },
+) {
+  if (!supabaseServerClient) {
+    return NextResponse.json(
+      { error: "SUPABASE_SERVICE_ROLE_KEY is not configured" },
+      { status: 500 },
+    );
+  }
+
+  const { slug } = await context.params;
+  const normalizedSlug = slug.trim();
+
+  // Get the request body
+  const body = await request.json();
+  const { status } = body;
+
+  if (!status) {
+    return NextResponse.json(
+      { error: "Status is required" },
+      { status: 400 },
+    );
+  }
+
+  // Update the project status
+  const { error } = await supabaseServerClient
+    .from("projects")
+    .update({ status })
+    .eq("slug", normalizedSlug);
+
+  if (error) {
+    console.error("Error updating project status:", error);
+    return NextResponse.json(
+      { error: "Failed to update project status" },
+      { status: 500 },
+    );
+  }
+
+  // Get the updated project
+  const { data, error: fetchError } = await supabaseServerClient
+    .from("projects")
+    .select("*")
+    .eq("slug", normalizedSlug)
+    .single();
+
+  if (fetchError) {
+    return NextResponse.json(
+      { error: "Failed to fetch updated project" },
+      { status: 500 },
+    );
+  }
+
+  const project = mapRowToProject(data);
+  return NextResponse.json({ project });
+}
+
+export async function DELETE(
+  request: NextRequest,
+  context: { params: Promise<{ slug: string }> },
+) {
+  if (!supabaseServerClient) {
+    return NextResponse.json(
+      { error: "SUPABASE_SERVICE_ROLE_KEY is not configured" },
+      { status: 500 },
+    );
+  }
+
+  const { slug } = await context.params;
+  const normalizedSlug = slug.trim();
+
+  // Delete the project
+  const { error } = await supabaseServerClient
+    .from("projects")
+    .delete()
+    .eq("slug", normalizedSlug);
+
+  if (error) {
+    console.error("Error deleting project:", error);
+    return NextResponse.json(
+      { error: "Failed to delete project" },
+      { status: 500 },
+    );
+  }
+
+  return NextResponse.json({ success: true });
+}
+

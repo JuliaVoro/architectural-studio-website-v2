@@ -175,12 +175,20 @@ export default function AdminProjectsPage() {
                       {project.status}
                     </span>
                     
+                    <div className="flex items-center gap-2">
                     <Link
                       href={`/systems/${project.slug}`}
                       className="text-xs text-neutral-600 underline underline-offset-4 hover:text-neutral-900"
                     >
                       View
                     </Link>
+                    <Link
+                      href={`/admin/projects/${project.slug}/edit`}
+                      className="text-xs text-blue-600 underline underline-offset-4 hover:text-blue-900"
+                    >
+                      Edit
+                    </Link>
+                  </div>
                   </div>
                 </div>
                 

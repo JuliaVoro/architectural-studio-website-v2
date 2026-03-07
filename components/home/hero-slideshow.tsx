@@ -116,20 +116,20 @@ export function HeroSlideshow() {
     }
   }, [current]);
 
-  // Preload next video when current slide starts
+  // Pause non-active videos to improve performance
   useEffect(() => {
-    const nextIndex = (current + 1) % slides.length;
-    const nextSlide = slides[nextIndex];
-    
-    if (nextSlide.type === "video") {
-      const video = videoRefs.current.get(nextIndex);
-      if (video && video.preload === "none") {
-        video.preload = "auto";
-        video.src = nextSlide.src;
-        video.load();
+    slides.forEach((slide, index) => {
+      if (slide.type === "video") {
+        const video = videoRefs.current.get(index);
+        if (video) {
+          if (index !== current && index !== previous) {
+            video.pause();
+            video.currentTime = 0;
+          }
+        }
       }
-    }
-  }, [current]);
+    });
+  }, [current, previous]);
 
   const goToSlide = useCallback(
     (index: number) => {
@@ -203,8 +203,9 @@ export function HeroSlideshow() {
       className="relative h-screen w-full overflow-hidden"
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
+      suppressHydrationWarning
     >
-      {/* Video slides - always mounted for preloading */}
+      {/* Video slides - always rendered to prevent hydration mismatch */}
       {slides.map((slide, index) => {
         if (slide.type !== "video") return null;
         const isActive = index === current;
@@ -219,11 +220,12 @@ export function HeroSlideshow() {
                 ? "z-20 opacity-100"
                 : isPrev
                   ? "z-10 opacity-100"
-                  : "z-0 opacity-0"
+                  : "z-0 opacity-0 pointer-events-none"
             )}
             style={{
               transitionDuration: `${TRANSITION_MS}ms`,
               transitionTimingFunction: "ease-in-out",
+              willChange: isActive || isPrev ? "opacity" : "auto",
             }}
           >
             <video
@@ -234,10 +236,9 @@ export function HeroSlideshow() {
               muted
               playsInline
               autoPlay={index === 0}
-              preload="auto"
+              preload={index === 0 || index === (current + 1) % slides.length ? "auto" : "metadata"}
               loop={false}
               onError={() => {
-                console.error(`Video ${index} failed to load`);
                 if (index === 0) {
                   // Force next slide if first video fails
                   setTimeout(() => nextSlide(), 1000);
@@ -262,7 +263,7 @@ export function HeroSlideshow() {
         );
       })}
 
-      {/* Image slides - always mounted for smooth transitions */}
+      {/* Image slides - always rendered to prevent hydration mismatch */}
       {slides.map((slide, index) => {
         if (slide.type !== "image") return null;
         const isActive = index === current;
@@ -277,11 +278,12 @@ export function HeroSlideshow() {
                 ? "z-20 opacity-100"
                 : isPrev
                   ? "z-10 opacity-100"
-                  : "z-0 opacity-0"
+                  : "z-0 opacity-0 pointer-events-none"
             )}
             style={{
               transitionDuration: `${TRANSITION_MS}ms`,
               transitionTimingFunction: "ease-in-out",
+              willChange: isActive || isPrev ? "opacity" : "auto",
             }}
           >
             <div
@@ -297,7 +299,8 @@ export function HeroSlideshow() {
                 alt={`${slide.title} - ${slide.subtitle} project in ${slide.location}`}
                 fill
                 className="object-cover"
-                priority={index < 3}
+                priority={index === 0}
+                loading={index === 0 ? "eager" : "lazy"}
                 sizes="100vw"
               />
             </div>
@@ -308,13 +311,13 @@ export function HeroSlideshow() {
       
 
       {/* Full overlay - deep blue-black tint for cinematic feel and masking video quality */}
-      <div className="absolute inset-0 z-25 bg-[#0a0f14]/40" />
+      <div className="absolute inset-0 z-25 bg-[#0a0f14]/40" suppressHydrationWarning />
 
       {/* Bottom gradient for text readability */}
-      <div className="absolute inset-x-0 bottom-0 z-30 h-[50%] bg-gradient-to-t from-[#0a0f14]/80 via-[#0a0f14]/40 to-transparent" />
+      <div className="absolute inset-x-0 bottom-0 z-30 h-[50%] bg-gradient-to-t from-[#0a0f14]/80 via-[#0a0f14]/40 to-transparent" suppressHydrationWarning />
 
       {/* Bottom content overlay */}
-      <div className="absolute inset-0 z-40 flex flex-col justify-end">
+      <div className="absolute inset-0 z-40 flex flex-col justify-end" suppressHydrationWarning>
         <div className="mx-auto w-full max-w-[1400px] px-6 pb-12 lg:px-12 lg:pb-16">
           {/* Project info */}
           <div className="mb-8 flex flex-col gap-6 lg:mb-12 lg:flex-row lg:items-end lg:justify-between">

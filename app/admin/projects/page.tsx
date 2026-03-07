@@ -95,12 +95,11 @@ export default function AdminProjectsPage() {
 
   const handleDelete = async (id: string) => {
     if (confirm('Are you sure you want to delete this system? This action cannot be undone.')) {
-      const success = await deleteProject(id);
-      if (success) {
+      const deleted = await deleteProject(id);
+      if (deleted) {
         setProjects(prev => prev.filter(p => p.id !== id));
       }
     }
-    return success;
   };
 
   return (

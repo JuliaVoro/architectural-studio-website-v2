@@ -114,6 +114,7 @@ export interface Project {
   heroImagePath?: string;
   introText?: string;
   story?: string;
+  storyLabel?: string;
   sections?: ProjectSection[];
   aiRawResponse?: unknown;
 }

@@ -231,7 +231,7 @@ export default async function SystemDetailPage({ params }: Props) {
             <div className="grid grid-cols-1 gap-16 md:grid-cols-12">
               <div className="md:col-span-3">
                 <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
-                  Story
+                  Context
                 </p>
               </div>
               <div className="md:col-span-9">
@@ -350,7 +350,7 @@ export default async function SystemDetailPage({ params }: Props) {
                   <div key={s.id} className="grid grid-cols-1 gap-16 md:grid-cols-12">
                     <div className="md:col-span-3">
                       <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
-                        Gallery
+                        {s.label || "Gallery"}
                       </p>
                     </div>
                     <div className="md:col-span-9">

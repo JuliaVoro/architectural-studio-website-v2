@@ -1,0 +1,10 @@
+// Fix for missing closing div in text_block case
+// This adds the missing </div> tag after line 312
+
+case "text_block": {
+  // ... existing content
+  </div>  // <-- This closing tag was missing
+}
+case "video": {
+  // ... existing content
+}

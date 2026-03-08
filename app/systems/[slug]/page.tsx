@@ -286,21 +286,23 @@ export default async function SystemDetailPage({ params }: Props) {
                 const s = section as TextBlockSection;
                 return (
                   <div key={s.id} className="grid grid-cols-1 gap-16 md:grid-cols-12">
-                    <div className={`md:col-span-1 ${isEven ? 'order-1' : 'order-2'}`}>
+                    <div className="md:col-span-1">
                       <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
                         {s.label || "Detail"}
                       </p>
                     </div>
-                    <div className={`md:col-span-7 ${isEven ? 'order-2' : 'order-1'}`}>
+                    <div className="md:col-span-7">
                       {s.heading && (
                         <h2 className="font-serif text-3xl text-neutral-900 mb-6">
                           {s.heading}
                         </h2>
                       )}
                       <div className="prose prose-lg max-w-none">
-                        <p className="text-neutral-700 leading-relaxed">
-                          {s.body}
-                        </p>
+                        {s.body.split('\n\n').map((paragraph, index) => (
+                          <p key={index} className="text-neutral-700 leading-relaxed mb-4">
+                            {paragraph}
+                          </p>
+                        ))}
                       </div>
                     </div>
                   </div>

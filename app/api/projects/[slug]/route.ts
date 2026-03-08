@@ -27,6 +27,56 @@ function mapRowToProject(row: any): Project {
   };
 }
 
+async function collectProjectFiles(project: Project): Promise<string[]> {
+  const files: string[] = [];
+  
+  // Add hero image if exists
+  if (project.heroImagePath) {
+    files.push(project.heroImagePath);
+  }
+  
+  // Collect files from sections
+  if (project.sections) {
+    for (const section of project.sections) {
+      switch (section.type) {
+        case "full_image":
+          if (section.imagePath) files.push(section.imagePath);
+          break;
+        case "gallery_grid":
+          if (section.imagePaths) files.push(...section.imagePaths);
+          break;
+        case "technical_drawings":
+          if (section.drawingPaths) files.push(...section.drawingPaths);
+          break;
+        case "video":
+          if (section.videoPath) files.push(section.videoPath);
+          break;
+      }
+    }
+  }
+  
+  return files;
+}
+
+async function deleteFilesFromStorage(filePaths: string[]) {
+  if (!filePaths.length) return;
+  
+  // Extract filenames from paths
+  const fileNames = filePaths.map(path => path.split('/').pop()).filter((name): name is string => Boolean(name));
+  
+  if (fileNames.length > 0) {
+    const { error } = await supabaseServerClient!
+      .storage
+      .from('project-media')
+      .remove(fileNames);
+    
+    if (error) {
+      console.error("Error deleting files from storage:", error);
+      // Don't fail the deletion if file cleanup fails
+    }
+  }
+}
+
 export async function GET(
   _request: NextRequest,
   context: { params: Promise<{ slug: string }> },
@@ -137,7 +187,27 @@ export async function DELETE(
   const { slug } = await context.params;
   const normalizedSlug = slug.trim();
 
-  // Delete the project
+  // First, get the project to collect its files
+  const { data: projectData, error: fetchError } = await supabaseServerClient
+    .from("projects")
+    .select("*")
+    .eq("slug", normalizedSlug)
+    .single();
+
+  if (fetchError || !projectData) {
+    console.error("Error fetching project for deletion:", fetchError);
+    return NextResponse.json(
+      { error: "Project not found" },
+      { status: 404 },
+    );
+  }
+
+  // Collect and delete files from storage
+  const project = mapRowToProject(projectData);
+  const files = await collectProjectFiles(project);
+  await deleteFilesFromStorage(files);
+
+  // Delete the project from database
   const { error } = await supabaseServerClient
     .from("projects")
     .delete()
@@ -151,6 +221,10 @@ export async function DELETE(
     );
   }
 
-  return NextResponse.json({ success: true });
+  console.log(`Deleted project "${normalizedSlug}" and ${files.length} associated files`);
+  return NextResponse.json({ 
+    success: true, 
+    message: `Project and ${files.length} files deleted successfully` 
+  });
 }
 

@@ -243,10 +243,17 @@ function SectionEditor({ section, index, onUpdate, onDelete, onMoveUp, onMoveDow
         return (
           <div className="space-y-4">
             <div className="relative aspect-video bg-black rounded-lg overflow-hidden">
+              {(editData as any).thumbnailPath || (section as any).thumbnailPath ? (
+                <img
+                  src={getProjectMediaUrl((editData as any).thumbnailPath || (section as any).thumbnailPath)}
+                  alt="Video thumbnail"
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+              ) : null}
               <video
                 src={getProjectMediaUrl((editData as any).videoPath || (section as any).videoPath)}
                 controls
-                className="w-full h-full"
+                className="w-full h-full relative z-10"
                 poster={
                   (editData as any).thumbnailPath || (section as any).thumbnailPath
                     ? getProjectMediaUrl((editData as any).thumbnailPath || (section as any).thumbnailPath)
@@ -288,11 +295,13 @@ function SectionEditor({ section, index, onUpdate, onDelete, onMoveUp, onMoveDow
                   </div>
                   {(editData as any).thumbnailPath && (
                     <div className="flex items-center gap-2">
-                      <img
-                        src={getProjectMediaUrl((editData as any).thumbnailPath)}
-                        alt="Thumbnail preview"
-                        className="w-16 h-16 object-cover rounded"
-                      />
+                      <div className="relative w-16 h-9 overflow-hidden rounded bg-black">
+                        <img
+                          src={getProjectMediaUrl((editData as any).thumbnailPath)}
+                          alt="Thumbnail preview"
+                          className="absolute inset-0 w-full h-full object-cover"
+                        />
+                      </div>
                       <Button
                         type="button"
                         variant="outline"

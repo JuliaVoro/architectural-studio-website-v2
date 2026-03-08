@@ -319,11 +319,18 @@ export default async function SystemDetailPage({ params }: Props) {
                     </div>
                     <div className="md:col-span-9">
                       <div className="max-w-4xl">
-                        <div className="aspect-video overflow-hidden rounded-lg bg-black">
+                        <div className="aspect-video overflow-hidden rounded-lg bg-black relative">
+                          {s.thumbnailPath ? (
+                            <img
+                              src={getProjectMediaUrl(s.thumbnailPath)}
+                              alt="Video thumbnail"
+                              className="absolute inset-0 w-full h-full object-cover"
+                            />
+                          ) : null}
                           <video
                             src={getProjectMediaUrl(s.videoPath)}
                             controls
-                            className="w-full h-full"
+                            className="w-full h-full relative z-10"
                             poster={s.thumbnailPath ? getProjectMediaUrl(s.thumbnailPath) : "/placeholder.jpg"}
                           />
                         </div>

@@ -849,14 +849,28 @@ export default function ProjectEditForm({ project }: ProjectEditFormProps) {
       }
 
       const data = await response.json();
-      setAiSuggestions(prev => ({
-        ...prev,
-        [field]: data.content
-      }));
-      setShowAiSuggestions(prev => ({
-        ...prev,
-        [field]: true
-      }));
+      
+      if (field === "fullProject") {
+        // Apply full project structure
+        if (data.sections) {
+          setSections(data.sections);
+        }
+        if (data.introText) {
+          handleInputChange("introText", data.introText);
+        }
+        if (data.story) {
+          handleInputChange("story", data.story);
+        }
+      } else {
+        setAiSuggestions(prev => ({
+          ...prev,
+          [field]: data.content
+        }));
+        setShowAiSuggestions(prev => ({
+          ...prev,
+          [field]: true
+        }));
+      }
     } catch (error) {
       console.error("Error generating content:", error);
       alert("Failed to generate AI content. Please try again.");
@@ -1075,10 +1089,26 @@ export default function ProjectEditForm({ project }: ProjectEditFormProps) {
       {/* Content with AI Assistance */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            Content
-            <Sparkles className="w-4 h-4 text-blue-500" />
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              Content
+              <Sparkles className="w-4 h-4 text-blue-500" />
+            </CardTitle>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleAIGeneration("fullProject")}
+              disabled={aiLoading === "fullProject"}
+              className="flex items-center gap-2"
+            >
+              {aiLoading === "fullProject" ? (
+                <Loader2 className="w-3 h-3 animate-spin" />
+              ) : (
+                <Sparkles className="w-3 h-3" />
+              )}
+              Generate Full Project
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="space-y-6">
           <div>

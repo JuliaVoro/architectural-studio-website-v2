@@ -73,6 +73,13 @@ export interface QuoteBlockSection extends BaseSection {
   quote: string;
 }
 
+export interface DownloadFileSection extends BaseSection {
+  type: "download_file";
+  fileName: string;
+  fileUrl: string;
+  description?: string;
+}
+
 export type ProjectSection =
   | FullImageSection
   | TextBlockSection
@@ -80,7 +87,8 @@ export type ProjectSection =
   | TechnicalDrawingsSection
   | MaterialsTableSection
   | VideoSection
-  | QuoteBlockSection;
+  | QuoteBlockSection
+  | DownloadFileSection;
 
 export interface AiProjectLayout {
   title: string;

@@ -41,7 +41,7 @@ export default function StudioPage() {
               Designing the logic of space.
             </h1>
             <p className="mt-8 max-w-xl text-base leading-relaxed text-muted-foreground">
-              Service Architecture Studio is an interdisciplinary practice
+              PSHKRV is an interdisciplinary practice
               operating at the intersection of spatial design, service design,
               and business strategy. We design environments that perform.
             </p>

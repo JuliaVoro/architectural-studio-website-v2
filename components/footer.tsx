@@ -8,10 +8,10 @@ export function Footer() {
           {/* Brand */}
           <div className="md:col-span-4">
             <Link href="/" className="font-serif text-lg tracking-tight text-foreground">
-              SAS
+              PSHKRV
             </Link>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-muted-foreground">
-              Service Architecture Studio. Designing spatial-service systems
+              PSHKRV. Designing spatial-service systems
               that perform.
             </p>
           </div>
@@ -45,10 +45,12 @@ export function Footer() {
             <ul className="mt-4 flex flex-col gap-3">
               <li>
                 <a
-                  href="mailto:studio@servicearchitecture.com"
+                  href="https://www.linkedin.com/in/pshkrv/"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-sm text-foreground transition-colors duration-300 hover:text-muted-foreground"
                 >
-                  studio@servicearchitecture.com
+                  /pshkrv
                 </a>
               </li>
               <li>
@@ -62,10 +64,15 @@ export function Footer() {
 
         <div className="mt-16 flex flex-col items-start justify-between gap-4 border-t border-border pt-8 md:flex-row md:items-center">
           <p className="text-xs text-muted-foreground">
-            {"Service Architecture Studio. All rights reserved."}
+            {`© ${new Date().getFullYear()} PSHKRV. All rights reserved.`}
           </p>
           <p className="text-xs text-muted-foreground">
-            {"Spatial-service systems since 2019"}
+            <Link
+              href="/privacy"
+              className="transition-colors duration-300 hover:text-foreground"
+            >
+              Privacy Policy
+            </Link>
           </p>
         </div>
       </div>

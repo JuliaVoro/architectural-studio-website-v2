@@ -16,8 +16,8 @@ const playfair = Playfair_Display({
 
 export const metadata: Metadata = {
   title: {
-    default: "Service Architecture Studio",
-    template: "%s | Service Architecture Studio",
+    default: "PSHKRV",
+    template: "%s | PSHKRV",
   },
   description:
     "We design spatial-service systems that align business strategy, operational performance, and human experience.",

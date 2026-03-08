@@ -405,12 +405,12 @@ function SectionEditor({ section, index, onUpdate, onDelete, onMoveUp, onMoveDow
           <div className="space-y-4">
             {isEditing ? (
               <div className="space-y-3">
-                <Label>Quote Text</Label>
+                <Label>Quote</Label>
                 <Textarea
                   value={(editData as any).quote || ""}
                   onChange={(e) => setEditData({ ...editData, quote: e.target.value } as any)}
-                  placeholder="Enter quote text..."
-                  rows={4}
+                  placeholder="Enter quote text"
+                  rows={3}
                 />
                 <Label>Label</Label>
                 <Input
@@ -427,6 +427,63 @@ function SectionEditor({ section, index, onUpdate, onDelete, onMoveUp, onMoveDow
                 <blockquote className="font-serif text-xl text-neutral-900 leading-relaxed border-l-4 border-neutral-300 pl-4">
                   "{(section as any).quote}"
                 </blockquote>
+              </div>
+            )}
+          </div>
+        );
+
+      case "download_file":
+        return (
+          <div className="space-y-4">
+            {isEditing ? (
+              <div className="space-y-3">
+                <Label>File Name</Label>
+                <Input
+                  value={(editData as any).fileName || ""}
+                  onChange={(e) => setEditData({ ...editData, fileName: e.target.value } as any)}
+                  placeholder="Enter file name"
+                />
+                <Label>File URL</Label>
+                <Input
+                  value={(editData as any).fileUrl || ""}
+                  onChange={(e) => setEditData({ ...editData, fileUrl: e.target.value } as any)}
+                  placeholder="https://example.com/file.pdf"
+                />
+                <Label>Description</Label>
+                <Textarea
+                  value={(editData as any).description || ""}
+                  onChange={(e) => setEditData({ ...editData, description: e.target.value } as any)}
+                  placeholder="Describe this file"
+                  rows={2}
+                />
+                <Label>Label</Label>
+                <Input
+                  value={(editData as any).label || ""}
+                  onChange={(e) => setEditData({ ...editData, label: e.target.value } as any)}
+                  placeholder="Section label"
+                />
+              </div>
+            ) : (
+              <div>
+                {(section as any).label && (
+                  <p className="text-sm text-muted-foreground mb-2">{(section as any).label}</p>
+                )}
+                {(section as any).fileUrl && (
+                  <div className="p-4 border rounded-lg bg-neutral-50">
+                    <a
+                      href={(section as any).fileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 text-primary hover:underline"
+                    >
+                      <Upload className="w-4 h-4" />
+                      <span className="font-medium">{(section as any).fileName || "Download File"}</span>
+                    </a>
+                    {(section as any).description && (
+                      <p className="text-sm text-muted-foreground mt-2">{(section as any).description}</p>
+                    )}
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -450,6 +507,7 @@ function SectionEditor({ section, index, onUpdate, onDelete, onMoveUp, onMoveDow
             {section.type === "technical_drawings" && <FileText className="w-4 h-4" />}
             {section.type === "materials_table" && <FileText className="w-4 h-4" />}
             {section.type === "quote_block" && <span className="text-lg">"</span>}
+            {section.type === "download_file" && <Upload className="w-4 h-4" />}
             <span className="text-sm font-medium capitalize">
               {section.type.replace("_", " ")}
             </span>
@@ -567,6 +625,14 @@ function NewSectionForm({ onAdd }: { onAdd: (section: ProjectSection) => void })
           label: "Quote"
         });
         break;
+      case "download_file":
+        Object.assign(newSection, {
+          fileName: "",
+          fileUrl: "",
+          description: "Download this file for more information",
+          label: "Download"
+        });
+        break;
       case "materials_table":
         Object.assign(newSection, {
           items: [
@@ -610,6 +676,7 @@ function NewSectionForm({ onAdd }: { onAdd: (section: ProjectSection) => void })
                   <option value="video">Video</option>
                   <option value="technical_drawings">Technical Drawings</option>
                   <option value="quote_block">Quote Block</option>
+                  <option value="download_file">Download File</option>
                 </select>
               </div>
               

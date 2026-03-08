@@ -44,12 +44,16 @@ export function Navigation() {
       <nav className="mx-auto flex max-w-[1400px] items-center justify-between px-6 py-5 lg:px-12">
         <Link
           href="/"
-          className={cn(
-            "font-serif text-lg tracking-tight transition-colors duration-500",
-            isTransparent ? "text-cream" : "text-foreground"
-          )}
+          className="flex items-center"
         >
-          SAS
+          <img
+            src="/images/logo.svg"
+            alt="PSHKRV"
+            className={cn(
+              "h-8 w-auto transition-colors duration-500",
+              isTransparent ? "brightness-0 invert" : "brightness-0"
+            )}
+          />
         </Link>
 
         {/* Desktop nav */}

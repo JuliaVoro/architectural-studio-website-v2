@@ -25,7 +25,7 @@ const slides: Slide[] = [
   },
   {
     type: "video",
-    src: "/videos/kidsroom.mp4",
+    src: "/videos/kidsroom2.mp4",
     poster: "/images/slide-lobby.jpg",
     title: "Kids room",
     subtitle: "Residential",

@@ -12,6 +12,7 @@ import type {
   MaterialsTableSection,
   VideoSection,
   QuoteBlockSection,
+  DownloadFileSection,
 } from "@/lib/projects";
 import { HeroImage } from "@/components/projects/HeroImage";
 import { HeroVideo } from "@/components/projects/HeroVideo";
@@ -21,6 +22,7 @@ import { GalleryGrid } from "@/components/projects/GalleryGrid";
 import { TechnicalDrawings } from "@/components/projects/TechnicalDrawings";
 import { KeyFactsTable } from "@/components/projects/KeyFactsTable";
 import { getProjectMediaUrl } from "@/lib/projects";
+import { Upload } from "lucide-react";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -280,7 +282,7 @@ export default async function SystemDetailPage({ params }: Props) {
                   <div key={s.id} className="grid grid-cols-1 gap-16 md:grid-cols-12">
                     <div className="md:col-span-1">
                       <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
-                        {s.label || "Detail"}
+                        {s.label ? s.label : "NO LABEL"}
                       </p>
                     </div>
                     <div className="md:col-span-7">
@@ -375,6 +377,34 @@ export default async function SystemDetailPage({ params }: Props) {
                       <blockquote className="font-serif text-2xl md:text-3xl text-neutral-900 leading-relaxed">
                         "{s.quote}"
                       </blockquote>
+                    </div>
+                  </div>
+                );
+              }
+              case "download_file": {
+                const s = section as DownloadFileSection;
+                return (
+                  <div key={s.id} className="grid grid-cols-1 gap-16 md:grid-cols-12">
+                    <div className="md:col-span-1">
+                      <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
+                        {s.label || "Download"}
+                      </p>
+                    </div>
+                    <div className="md:col-span-11">
+                      <div className="p-6 border rounded-lg bg-neutral-50">
+                        <a
+                          href={s.fileUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 text-primary hover:underline"
+                        >
+                          <Upload className="w-5 h-5" />
+                          <span className="font-medium text-lg">{s.fileName || "Download File"}</span>
+                        </a>
+                        {s.description && (
+                          <p className="text-sm text-muted-foreground mt-3">{s.description}</p>
+                        )}
+                      </div>
                     </div>
                   </div>
                 );

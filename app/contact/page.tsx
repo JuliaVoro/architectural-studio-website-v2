@@ -3,7 +3,7 @@ import { ContactForm } from "@/components/contact/contact-form";
 
 export const metadata: Metadata = {
   title: "Contact",
-  description: "Start a conversation with Service Architecture Studio.",
+  description: "Start a conversation with PSHKRV.",
 };
 
 export default function ContactPage() {
@@ -29,13 +29,15 @@ export default function ContactPage() {
             <div className="flex flex-col gap-10">
               <div>
                 <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
-                  Email
+                  LinkedIn
                 </p>
                 <a
-                  href="mailto:studio@servicearchitecture.com"
+                  href="https://www.linkedin.com/in/pshkrv/"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="mt-3 block text-base text-foreground transition-colors duration-300 hover:text-primary"
                 >
-                  studio@servicearchitecture.com
+                  /pshkrv
                 </a>
               </div>
               <div>
@@ -51,7 +53,7 @@ export default function ContactPage() {
                   Availability
                 </p>
                 <p className="mt-3 text-base text-foreground">
-                  Currently accepting new projects for Q3 2026.
+                  Available for new projects and collaborations. Feel free to get in touch.
                 </p>
               </div>
               <div className="border-t border-border pt-8">

@@ -60,7 +60,7 @@ export async function POST(request: Request) {
       console.log("Attempting to send email with RESEND_API_KEY:", process.env.RESEND_API_KEY ? "Key exists" : "No key");
       if (process.env.RESEND_API_KEY) {
         const emailResult = await resend.emails.send({
-          from: "Service Architecture Studio <onboarding@resend.dev>",
+          from: "PSHKRV <onboarding@resend.dev>",
           to: "iuliia.vorobiova@gmail.com",
           subject: `New Contact Form Submission from ${name}`,
           html: `

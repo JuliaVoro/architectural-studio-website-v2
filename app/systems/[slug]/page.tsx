@@ -246,15 +246,19 @@ export default async function SystemDetailPage({ params }: Props) {
 
         {/* Content Sections */}
         <div className="space-y-24">
-          {filteredSections.map((section, index) => {
-            const isEven = index % 2 === 0;
+          {filteredSections.map((section) => {
             
             switch (section.type) {
               case "full_image": {
                 const s = section as FullImageSection;
                 return (
                   <div key={s.id} className="grid grid-cols-1 gap-16 md:grid-cols-12">
-                    <div className={`md:col-span-6 ${isEven ? 'order-1' : 'order-2'}`}>
+                    <div className="md:col-span-1">
+                      <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
+                        Image
+                      </p>
+                    </div>
+                    <div className="md:col-span-11">
                       <img
                         src={getProjectMediaUrl(s.imagePath)}
                         alt={s.caption || "Project image"}
@@ -265,19 +269,6 @@ export default async function SystemDetailPage({ params }: Props) {
                           {s.caption}
                         </p>
                       )}
-                    </div>
-                    <div className={`md:col-span-4 ${isEven ? 'order-2' : 'order-1'}`}>
-                      <div className="flex flex-col justify-center h-full">
-                        <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground mb-4">
-                          Project Detail
-                        </p>
-                        <p className="text-base leading-relaxed text-neutral-700">
-                          {s.caption && s.caption !== "A view of the project showcasing the architectural design and spatial arrangement."
-                            ? s.caption 
-                            : "A detailed view of the architectural design and spatial arrangement."
-                          }
-                        </p>
-                      </div>
                     </div>
                   </div>
                 );
@@ -314,7 +305,12 @@ export default async function SystemDetailPage({ params }: Props) {
                 
                 return (
                   <div key={s.id} className="grid grid-cols-1 gap-16 md:grid-cols-12">
-                    <div className={`md:col-span-6 ${isEven ? 'order-1' : 'order-2'}`}>
+                    <div className="md:col-span-1">
+                      <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
+                        Video
+                      </p>
+                    </div>
+                    <div className="md:col-span-8">
                       <div className="aspect-video overflow-hidden rounded-lg bg-black">
                         <video
                           src={getProjectMediaUrl(s.videoPath)}
@@ -329,19 +325,6 @@ export default async function SystemDetailPage({ params }: Props) {
                         </p>
                       )}
                     </div>
-                    <div className={`md:col-span-4 ${isEven ? 'order-2' : 'order-1'}`}>
-                      <div className="flex flex-col justify-center h-full">
-                        <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground mb-4">
-                          Video
-                        </p>
-                        <p className="text-base leading-relaxed text-neutral-700">
-                          {hasUniqueCaption 
-                            ? s.caption 
-                            : "Experience the project through this visual walkthrough."
-                          }
-                        </p>
-                      </div>
-                    </div>
                   </div>
                 );
               }
@@ -349,12 +332,12 @@ export default async function SystemDetailPage({ params }: Props) {
                 const s = section as GalleryGridSection;
                 return (
                   <div key={s.id} className="grid grid-cols-1 gap-16 md:grid-cols-12">
-                    <div className={`md:col-span-1 ${isEven ? 'order-1' : 'order-2'}`}>
+                    <div className="md:col-span-1">
                       <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
                         Gallery
                       </p>
                     </div>
-                    <div className={`md:col-span-11 ${isEven ? 'order-2' : 'order-1'}`}>
+                    <div className="md:col-span-11">
                       <GalleryGrid imagePaths={s.imagePaths ?? []} />
                     </div>
                   </div>
@@ -364,50 +347,16 @@ export default async function SystemDetailPage({ params }: Props) {
                 const s = section as TechnicalDrawingsSection;
                 return (
                   <div key={s.id} className="grid grid-cols-1 gap-16 md:grid-cols-12">
-                    <div className={`md:col-span-1 ${isEven ? 'order-1' : 'order-2'}`}>
+                    <div className="md:col-span-1">
                       <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
                         Drawings
                       </p>
                     </div>
-                    <div className={`md:col-span-11 ${isEven ? 'order-2' : 'order-1'}`}>
+                    <div className="md:col-span-11">
                       <TechnicalDrawings
                         drawingPaths={s.drawingPaths ?? []}
                         notes={s.notes}
                       />
-                    </div>
-                  </div>
-                );
-              }
-              case "materials_table": {
-                const s = section as MaterialsTableSection;
-                return (
-                  <div key={s.id} className="grid grid-cols-1 gap-16 md:grid-cols-12">
-                    <div className={`md:col-span-1 ${isEven ? 'order-1' : 'order-2'}`}>
-                      <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
-                        Materials
-                      </p>
-                    </div>
-                    <div className={`md:col-span-7 ${isEven ? 'order-2' : 'order-1'}`}>
-                      <h3 className="font-serif text-2xl text-neutral-900 mb-8">Material Specifications</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        {s.items.map((item) => (
-                          <div key={item.name} className="border-b border-neutral-200 pb-4">
-                            <div className="flex justify-between items-start">
-                              <div>
-                                <div className="font-medium text-neutral-900">{item.name}</div>
-                                {item.description && (
-                                  <div className="text-sm text-neutral-600 mt-1">{item.description}</div>
-                                )}
-                              </div>
-                              {item.role && (
-                                <div className="text-xs uppercase tracking-[0.18em] text-neutral-500 ml-4">
-                                  {item.role}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
                     </div>
                   </div>
                 );

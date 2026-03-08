@@ -570,7 +570,6 @@ function NewSectionForm({ onAdd }: { onAdd: (section: ProjectSection) => void })
                   <option value="gallery_grid">Gallery Grid</option>
                   <option value="video">Video</option>
                   <option value="technical_drawings">Technical Drawings</option>
-                  <option value="materials_table">Materials Table</option>
                 </select>
               </div>
               

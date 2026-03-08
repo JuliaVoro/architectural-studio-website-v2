@@ -140,4 +140,25 @@ export function getProjectMediaUrl(storagePath: string): string {
   return `${normalizedBase}/storage/v1/object/public/project-media/${normalizedPath}`;
 }
 
+export function getValidProjectMediaUrl(storagePath: string | undefined): string | null {
+  if (!storagePath) return null;
+  
+  // Check if this looks like an AI-generated path (common patterns)
+  const aiGeneratedPatterns = [
+    /projects\/\d+\/hero\/.*\.jpg$/i,
+    /projects\/\d+\/hero\/.*\.png$/i,
+    /projects\/\d+\/images\/.*\.jpg$/i,
+    /projects\/\d+\/images\/.*\.png$/i,
+    /projects\/\d+\/gallery\/.*\.jpg$/i,
+    /projects\/\d+\/gallery\/.*\.png$/i,
+  ];
+  
+  // If it matches AI-generated patterns, return null to use fallback
+  if (aiGeneratedPatterns.some(pattern => pattern.test(storagePath))) {
+    return null;
+  }
+  
+  return getProjectMediaUrl(storagePath);
+}
+
 

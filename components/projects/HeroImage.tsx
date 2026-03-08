@@ -1,15 +1,13 @@
 import Image from "next/image";
 import type { Project } from "@/lib/projects";
-import { getProjectMediaUrl } from "@/lib/projects";
+import { getProjectMediaUrl, getValidProjectMediaUrl } from "@/lib/projects";
 
 interface HeroImageProps {
   project: Project;
 }
 
 export function HeroImage({ project }: HeroImageProps) {
-  const src = project.heroImagePath
-    ? getProjectMediaUrl(project.heroImagePath)
-    : null;
+  const src = getValidProjectMediaUrl(project.heroImagePath);
 
   return (
     <section className="border-b border-neutral-200 bg-neutral-50">
@@ -85,6 +83,19 @@ export function HeroImage({ project }: HeroImageProps) {
                 className="object-cover"
                 sizes="(min-width: 1024px) 1024px, 100vw"
               />
+            </div>
+          </div>
+        </div>
+      )}
+      {!src && (
+        <div className="border-t border-neutral-200 bg-neutral-100">
+          <div className="relative mx-auto h-[320px] max-w-6xl overflow-hidden px-6 pb-8 pt-4 md:h-[440px] md:pb-10">
+            <div className="relative h-full w-full overflow-hidden rounded-lg bg-gradient-to-br from-neutral-100 to-neutral-200 flex items-center justify-center">
+              <div className="text-center text-neutral-500">
+                <div className="text-6xl mb-4">🏗️</div>
+                <p className="text-lg font-medium">Architectural Project</p>
+                <p className="text-sm mt-2">Hero image will be uploaded here</p>
+              </div>
             </div>
           </div>
         </div>

@@ -400,6 +400,38 @@ function SectionEditor({ section, index, onUpdate, onDelete, onMoveUp, onMoveDow
           </div>
         );
 
+      case "quote_block":
+        return (
+          <div className="space-y-4">
+            {isEditing ? (
+              <div className="space-y-3">
+                <Label>Quote Text</Label>
+                <Textarea
+                  value={(editData as any).quote || ""}
+                  onChange={(e) => setEditData({ ...editData, quote: e.target.value } as any)}
+                  placeholder="Enter quote text..."
+                  rows={4}
+                />
+                <Label>Label</Label>
+                <Input
+                  value={(editData as any).label || ""}
+                  onChange={(e) => setEditData({ ...editData, label: e.target.value } as any)}
+                  placeholder="Section label"
+                />
+              </div>
+            ) : (
+              <div>
+                {(section as any).label && (
+                  <p className="text-sm text-muted-foreground mb-2">{(section as any).label}</p>
+                )}
+                <blockquote className="font-serif text-xl text-neutral-900 leading-relaxed border-l-4 border-neutral-300 pl-4">
+                  "{(section as any).quote}"
+                </blockquote>
+              </div>
+            )}
+          </div>
+        );
+
       default:
         return <p className="text-muted-foreground">Unknown section type</p>;
     }
@@ -417,6 +449,7 @@ function SectionEditor({ section, index, onUpdate, onDelete, onMoveUp, onMoveDow
             {section.type === "video" && <Video className="w-4 h-4" />}
             {section.type === "technical_drawings" && <FileText className="w-4 h-4" />}
             {section.type === "materials_table" && <FileText className="w-4 h-4" />}
+            {section.type === "quote_block" && <span className="text-lg">"</span>}
             <span className="text-sm font-medium capitalize">
               {section.type.replace("_", " ")}
             </span>
@@ -528,6 +561,12 @@ function NewSectionForm({ onAdd }: { onAdd: (section: ProjectSection) => void })
           label: "Drawings"
         });
         break;
+      case "quote_block":
+        Object.assign(newSection, {
+          quote: "Architecture is not an object. It is infrastructure. Experience is not a layer. It is a system. We design both — as one.",
+          label: "Quote"
+        });
+        break;
       case "materials_table":
         Object.assign(newSection, {
           items: [
@@ -570,6 +609,7 @@ function NewSectionForm({ onAdd }: { onAdd: (section: ProjectSection) => void })
                   <option value="gallery_grid">Gallery Grid</option>
                   <option value="video">Video</option>
                   <option value="technical_drawings">Technical Drawings</option>
+                  <option value="quote_block">Quote Block</option>
                 </select>
               </div>
               

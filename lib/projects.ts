@@ -68,13 +68,19 @@ export interface VideoSection extends BaseSection {
   caption?: string;
 }
 
+export interface QuoteBlockSection extends BaseSection {
+  type: "quote_block";
+  quote: string;
+}
+
 export type ProjectSection =
   | FullImageSection
   | TextBlockSection
   | GalleryGridSection
   | TechnicalDrawingsSection
   | MaterialsTableSection
-  | VideoSection;
+  | VideoSection
+  | QuoteBlockSection;
 
 export interface AiProjectLayout {
   title: string;

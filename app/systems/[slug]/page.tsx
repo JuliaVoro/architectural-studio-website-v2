@@ -11,6 +11,7 @@ import type {
   TechnicalDrawingsSection,
   MaterialsTableSection,
   VideoSection,
+  QuoteBlockSection,
 } from "@/lib/projects";
 import { HeroImage } from "@/components/projects/HeroImage";
 import { HeroVideo } from "@/components/projects/HeroVideo";
@@ -357,6 +358,23 @@ export default async function SystemDetailPage({ params }: Props) {
                         drawingPaths={s.drawingPaths ?? []}
                         notes={s.notes}
                       />
+                    </div>
+                  </div>
+                );
+              }
+              case "quote_block": {
+                const s = section as QuoteBlockSection;
+                return (
+                  <div key={s.id} className="grid grid-cols-1 gap-16 md:grid-cols-12">
+                    <div className="md:col-span-1">
+                      <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
+                        {s.label || "Quote"}
+                      </p>
+                    </div>
+                    <div className="md:col-span-11">
+                      <blockquote className="font-serif text-2xl md:text-3xl text-neutral-900 leading-relaxed">
+                        "{s.quote}"
+                      </blockquote>
                     </div>
                   </div>
                 );

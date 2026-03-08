@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { supabaseServerClient } from "@/lib/supabase-client";
 import type { Project } from "@/lib/projects";
-import { SystemsGrid } from "@/components/systems/systems-grid";
+import { StoriesGrid } from "@/components/systems/systems-grid";
 
 async function getProjects(): Promise<Project[]> {
   if (!supabaseServerClient) {
@@ -26,6 +26,7 @@ async function getProjects(): Promise<Project[]> {
     updatedAt: row.updated_at,
     status: row.status,
     featured: row.featured,
+    private: row.private || false,
     slug: row.slug,
     keyFacts: {
       title: row.title,
@@ -45,12 +46,12 @@ async function getProjects(): Promise<Project[]> {
 }
 
 export const metadata: Metadata = {
-  title: "Systems",
+  title: "Stories",
   description:
     "Selected spatial-service systems. Case studies categorized by strategic system type.",
 };
 
-export default async function SystemsPage() {
+export default async function StoriesPage() {
   const projects = await getProjects();
 
   return (
@@ -60,10 +61,10 @@ export default async function SystemsPage() {
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
           <div className="lg:col-span-6">
             <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
-              Systems
+              Stories
             </p>
             <h1 className="mt-6 font-serif text-4xl leading-[1.1] tracking-tight text-foreground md:text-5xl lg:text-6xl text-balance">
-              Selected Systems
+              Selected Stories
             </h1>
           </div>
           <div className="lg:col-span-4 lg:col-start-8">
@@ -76,7 +77,7 @@ export default async function SystemsPage() {
         </div>
 
         {/* Grid */}
-        <SystemsGrid projects={projects} />
+        <StoriesGrid projects={projects} />
       </div>
     </section>
   );

@@ -22,7 +22,7 @@ export function Footer() {
               Navigation
             </p>
             <ul className="mt-4 flex flex-col gap-3">
-              {["Home", "Systems", "Approach", "Studio", "Contact"].map(
+              {["Home", "Stories", "Approach", "Studio", "Contact"].map(
                 (item) => (
                   <li key={item}>
                     <Link

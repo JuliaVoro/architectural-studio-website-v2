@@ -6,8 +6,9 @@ import { useEffect, useRef, useState } from "react";
 import { supabaseBrowserClient } from "@/lib/supabase-client";
 import type { Project } from "@/lib/projects";
 import { getProjectMediaUrl } from "@/lib/projects";
+import { Lock } from "lucide-react";
 
-export function SelectedSystems() {
+export function SelectedStories() {
   const sectionRef = useRef<HTMLElement>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [projects, setProjects] = useState<Project[]>([]);
@@ -51,6 +52,7 @@ export function SelectedSystems() {
         updatedAt: row.updated_at,
         status: row.status,
         featured: row.featured,
+        private: row.private || false,
         slug: row.slug,
         keyFacts: {
           title: row.title,
@@ -81,7 +83,7 @@ export function SelectedSystems() {
         <div className="flex items-end justify-between">
           <div>
             <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
-              Selected Systems
+              Selected Stories
             </p>
             <h2 className="mt-6 font-serif text-3xl leading-[1.2] tracking-tight text-foreground md:text-4xl text-balance">
               Recent Work
@@ -117,36 +119,82 @@ export function SelectedSystems() {
               </div>
             ))
           ) : projects.length > 0 ? (
-            projects.map((project, index) => (
-              <Link
-                href={`/systems/${project.slug}`}
-                key={project.id}
-                className="group"
-                style={{
-                  opacity: isVisible ? 1 : 0,
-                  transform: isVisible ? "translateY(0)" : "translateY(20px)",
-                  transition: `opacity 0.7s ease ${index * 0.15}s, transform 0.7s ease ${index * 0.15}s`,
-                }}
-              >
-                <div className="relative aspect-[16/10] w-full overflow-hidden bg-sand">
-                  <Image
-                    src={project.heroImagePath ? getProjectMediaUrl(project.heroImagePath) : "/placeholder.jpg"}
-                    alt={project.keyFacts.title}
-                    fill
-                    className="object-cover transition-transform duration-700 group-hover:scale-[1.02]"
-                    sizes="(max-width: 768px) 100vw, 50vw"
-                  />
-                </div>
-                <div className="mt-5">
-                  <h3 className="text-base font-medium text-foreground">
-                    {project.keyFacts.title}
-                  </h3>
-                  <p className="mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">
-                    {project.introText}
-                  </p>
-                </div>
-              </Link>
-            ))
+            projects.map((project, index) => {
+              const isPrivate = project.private;
+              
+              if (isPrivate) {
+                // Private story - no navigation, show NDA icon
+                return (
+                  <div
+                    key={project.id}
+                    className="group opacity-75"
+                    style={{
+                      opacity: isVisible ? 0.75 : 0,
+                      transform: isVisible ? "translateY(0)" : "translateY(20px)",
+                      transition: `opacity 0.7s ease ${index * 0.15}s, transform 0.7s ease ${index * 0.15}s`,
+                    }}
+                  >
+                    <div className="relative aspect-[16/10] w-full overflow-hidden bg-sand">
+                      <Image
+                        src={project.heroImagePath ? getProjectMediaUrl(project.heroImagePath) : "/placeholder.jpg"}
+                        alt={project.keyFacts.title}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 100vw, 50vw"
+                      />
+                      <div className="absolute top-4 right-4 rounded-full bg-black/70 p-2">
+                        <Lock className="w-4 h-4 text-white" />
+                      </div>
+                    </div>
+                    <div className="mt-5">
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-base font-medium text-foreground">
+                          {project.keyFacts.title}
+                        </h3>
+                        <span className="text-[10px] px-2 py-1 bg-neutral-100 text-neutral-600 rounded-full">
+                          NDA Protected
+                        </span>
+                      </div>
+                      <p className="mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">
+                        {project.introText}
+                      </p>
+                    </div>
+                  </div>
+                );
+              }
+              
+              // Public story - normal navigation
+              return (
+                <Link
+                  href={`/systems/${project.slug}`}
+                  key={project.id}
+                  className="group"
+                  style={{
+                    opacity: isVisible ? 1 : 0,
+                    transform: isVisible ? "translateY(0)" : "translateY(20px)",
+                    transition: `opacity 0.7s ease ${index * 0.15}s, transform 0.7s ease ${index * 0.15}s`,
+                  }}
+                >
+                  <div className="relative aspect-[16/10] w-full overflow-hidden bg-sand">
+                    <Image
+                      src={project.heroImagePath ? getProjectMediaUrl(project.heroImagePath) : "/placeholder.jpg"}
+                      alt={project.keyFacts.title}
+                      fill
+                      className="object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                    />
+                  </div>
+                  <div className="mt-5">
+                    <h3 className="text-base font-medium text-foreground">
+                      {project.keyFacts.title}
+                    </h3>
+                    <p className="mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">
+                      {project.introText}
+                    </p>
+                  </div>
+                </Link>
+              );
+            })
           ) : (
             <div className="col-span-full text-center py-12">
               <p className="text-muted-foreground">No projects available yet.</p>

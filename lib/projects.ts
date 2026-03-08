@@ -105,6 +105,7 @@ export interface Project {
   updatedAt: string;
   status: ProjectStatus;
   featured: boolean;
+  private: boolean;
   slug: string;
   keyFacts: ProjectKeyFacts;
   notes?: string;

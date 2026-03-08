@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2, Sparkles, RefreshCw, Plus, Trash2, Edit3, Image as ImageIcon, Video, FileText, Move, Upload, GripVertical } from "lucide-react";
 import Image from "next/image";
 
@@ -726,6 +727,7 @@ export default function ProjectEditForm({ project }: ProjectEditFormProps) {
     introText: project.introText || "",
     story: project.story || "",
     heroImagePath: project.heroImagePath || "",
+    private: project.private || false,
   });
 
   const handleHeroImageUpload = async (file: File) => {
@@ -761,7 +763,7 @@ export default function ProjectEditForm({ project }: ProjectEditFormProps) {
     }
   };
 
-  const handleInputChange = (field: string, value: string | number) => {
+  const handleInputChange = (field: string, value: string | number | boolean) => {
     setFormData(prev => ({
       ...prev,
       [field]: value,
@@ -883,6 +885,7 @@ export default function ProjectEditForm({ project }: ProjectEditFormProps) {
           story: formData.story || null,
           hero_image_path: formData.heroImagePath || null,
           sections: sections,
+          private: formData.private,
           updated_at: new Date().toISOString(),
         })
         .eq("id", project.id);
@@ -1173,6 +1176,28 @@ export default function ProjectEditForm({ project }: ProjectEditFormProps) {
             
             <NewSectionForm onAdd={handleSectionAdd} />
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Privacy Settings */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Privacy Settings</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="private"
+              checked={formData.private}
+              onCheckedChange={(checked) => handleInputChange("private", checked)}
+            />
+            <Label htmlFor="private" className="text-sm">
+              Make this story private (NDA Protected)
+            </Label>
+          </div>
+          <p className="text-xs text-muted-foreground mt-2">
+            Private stories will show a preview only and cannot be viewed in detail by the public.
+          </p>
         </CardContent>
       </Card>
 

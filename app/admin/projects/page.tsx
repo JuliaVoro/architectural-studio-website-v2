@@ -107,7 +107,7 @@ export default function AdminProjectsPage() {
       <header className="flex items-center justify-between">
         <div>
           <h1 className="text-xs font-medium uppercase tracking-[0.25em] text-neutral-500">
-            Systems
+            Stories
           </h1>
           <p className="mt-2 max-w-xl text-sm text-neutral-600">
             Overview of AI-generated architectural systems. Click through to preview the

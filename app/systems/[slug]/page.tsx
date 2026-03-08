@@ -145,7 +145,7 @@ export default async function SystemDetailPage({ params }: Props) {
             href="/systems"
             className="text-sm text-neutral-600 transition-colors duration-300 hover:text-neutral-900"
           >
-            ← Back to Systems
+            ← Back to Stories
           </Link>
         </div>
       </header>
@@ -430,7 +430,7 @@ export default async function SystemDetailPage({ params }: Props) {
               href="/systems"
               className="text-sm text-neutral-600 transition-colors duration-300 hover:text-neutral-900"
             >
-              ← Back to Systems
+              ← Back to Stories
             </Link>
           </div>
         </div>

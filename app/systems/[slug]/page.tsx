@@ -229,12 +229,12 @@ export default async function SystemDetailPage({ params }: Props) {
         {project.story && (
           <div className="mb-24">
             <div className="grid grid-cols-1 gap-16 md:grid-cols-12">
-              <div className="md:col-span-1">
+              <div className="md:col-span-3">
                 <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
                   Story
                 </p>
               </div>
-              <div className="md:col-span-7">
+              <div className="md:col-span-9">
                 <div className="prose prose-lg max-w-none">
                   {project.story.split('\n\n').map((paragraph, index) => (
                     <p key={index} className="text-neutral-700 leading-relaxed mb-4">
@@ -256,22 +256,24 @@ export default async function SystemDetailPage({ params }: Props) {
                 const s = section as FullImageSection;
                 return (
                   <div key={s.id} className="grid grid-cols-1 gap-16 md:grid-cols-12">
-                    <div className="md:col-span-1">
+                    <div className="md:col-span-3">
                       <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
                         Image
                       </p>
                     </div>
-                    <div className="md:col-span-11">
-                      <img
-                        src={getProjectMediaUrl(s.imagePath)}
-                        alt={s.caption || "Project image"}
-                        className="w-full h-auto"
-                      />
-                      {s.caption && s.caption !== "A view of the project showcasing the architectural design and spatial arrangement." && (
-                        <p className="text-sm text-neutral-600 mt-4">
-                          {s.caption}
-                        </p>
-                      )}
+                    <div className="md:col-span-9">
+                      <div className="max-w-4xl">
+                        <img
+                          src={getProjectMediaUrl(s.imagePath)}
+                          alt={s.caption || "Project image"}
+                          className="w-full h-auto"
+                        />
+                        {s.caption && s.caption !== "A view of the project showcasing the architectural design and spatial arrangement." && (
+                          <p className="text-sm text-neutral-600 mt-4">
+                            {s.caption}
+                          </p>
+                        )}
+                      </div>
                     </div>
                   </div>
                 );
@@ -280,23 +282,25 @@ export default async function SystemDetailPage({ params }: Props) {
                 const s = section as TextBlockSection;
                 return (
                   <div key={s.id} className="grid grid-cols-1 gap-16 md:grid-cols-12">
-                    <div className="md:col-span-1">
+                    <div className="md:col-span-3">
                       <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
                         {s.label ? s.label : "NO LABEL"}
                       </p>
                     </div>
-                    <div className="md:col-span-7">
-                      {s.heading && (
-                        <h2 className="font-serif text-3xl text-neutral-900 mb-6">
-                          {s.heading}
-                        </h2>
-                      )}
-                      <div className="prose prose-lg max-w-none">
-                        {s.body.split('\n\n').map((paragraph, index) => (
-                          <p key={index} className="text-neutral-700 leading-relaxed mb-4">
-                            {paragraph}
-                          </p>
-                        ))}
+                    <div className="md:col-span-9">
+                      <div className="max-w-3xl">
+                        {s.heading && (
+                          <h2 className="font-serif text-3xl text-neutral-900 mb-6">
+                            {s.heading}
+                          </h2>
+                        )}
+                        <div className="prose prose-lg max-w-none">
+                          {s.body.split('\n\n').map((paragraph, index) => (
+                            <p key={index} className="text-neutral-700 leading-relaxed mb-4">
+                              {paragraph}
+                            </p>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -308,25 +312,27 @@ export default async function SystemDetailPage({ params }: Props) {
                 
                 return (
                   <div key={s.id} className="grid grid-cols-1 gap-16 md:grid-cols-12">
-                    <div className="md:col-span-1">
+                    <div className="md:col-span-3">
                       <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
                         {s.label || "Video"}
                       </p>
                     </div>
-                    <div className="md:col-span-8">
-                      <div className="aspect-video overflow-hidden rounded-lg bg-black">
-                        <video
-                          src={getProjectMediaUrl(s.videoPath)}
-                          controls
-                          className="w-full h-full"
-                          poster={s.thumbnailPath ? getProjectMediaUrl(s.thumbnailPath) : "/placeholder.jpg"}
-                        />
+                    <div className="md:col-span-9">
+                      <div className="max-w-4xl">
+                        <div className="aspect-video overflow-hidden rounded-lg bg-black">
+                          <video
+                            src={getProjectMediaUrl(s.videoPath)}
+                            controls
+                            className="w-full h-full"
+                            poster={s.thumbnailPath ? getProjectMediaUrl(s.thumbnailPath) : "/placeholder.jpg"}
+                          />
+                        </div>
+                        {hasUniqueCaption && (
+                          <p className="text-sm text-neutral-600 mt-4">
+                            {s.caption}
+                          </p>
+                        )}
                       </div>
-                      {hasUniqueCaption && (
-                        <p className="text-sm text-neutral-600 mt-4">
-                          {s.caption}
-                        </p>
-                      )}
                     </div>
                   </div>
                 );
@@ -335,13 +341,15 @@ export default async function SystemDetailPage({ params }: Props) {
                 const s = section as GalleryGridSection;
                 return (
                   <div key={s.id} className="grid grid-cols-1 gap-16 md:grid-cols-12">
-                    <div className="md:col-span-1">
+                    <div className="md:col-span-3">
                       <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
                         Gallery
                       </p>
                     </div>
-                    <div className="md:col-span-11">
-                      <GalleryGrid imagePaths={s.imagePaths ?? []} />
+                    <div className="md:col-span-9">
+                      <div className="max-w-5xl">
+                        <GalleryGrid imagePaths={s.imagePaths ?? []} />
+                      </div>
                     </div>
                   </div>
                 );
@@ -350,16 +358,18 @@ export default async function SystemDetailPage({ params }: Props) {
                 const s = section as TechnicalDrawingsSection;
                 return (
                   <div key={s.id} className="grid grid-cols-1 gap-16 md:grid-cols-12">
-                    <div className="md:col-span-1">
+                    <div className="md:col-span-3">
                       <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
                         Drawings
                       </p>
                     </div>
-                    <div className="md:col-span-11">
-                      <TechnicalDrawings
-                        drawingPaths={s.drawingPaths ?? []}
-                        notes={s.notes}
-                      />
+                    <div className="md:col-span-9">
+                      <div className="max-w-5xl">
+                        <TechnicalDrawings
+                          drawingPaths={s.drawingPaths ?? []}
+                          notes={s.notes}
+                        />
+                      </div>
                     </div>
                   </div>
                 );
@@ -368,15 +378,17 @@ export default async function SystemDetailPage({ params }: Props) {
                 const s = section as QuoteBlockSection;
                 return (
                   <div key={s.id} className="grid grid-cols-1 gap-16 md:grid-cols-12">
-                    <div className="md:col-span-1">
+                    <div className="md:col-span-3">
                       <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
                         {s.label || "Quote"}
                       </p>
                     </div>
-                    <div className="md:col-span-11">
-                      <blockquote className="font-serif text-2xl md:text-3xl text-neutral-900 leading-relaxed">
-                        "{s.quote}"
-                      </blockquote>
+                    <div className="md:col-span-9">
+                      <div className="max-w-4xl">
+                        <blockquote className="font-serif text-2xl md:text-3xl text-neutral-900 leading-relaxed">
+                          "{s.quote}"
+                        </blockquote>
+                      </div>
                     </div>
                   </div>
                 );
@@ -385,25 +397,27 @@ export default async function SystemDetailPage({ params }: Props) {
                 const s = section as DownloadFileSection;
                 return (
                   <div key={s.id} className="grid grid-cols-1 gap-16 md:grid-cols-12">
-                    <div className="md:col-span-1">
+                    <div className="md:col-span-3">
                       <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
-                        {s.label || "Download"}
+                        Download
                       </p>
                     </div>
-                    <div className="md:col-span-11">
-                      <div className="p-6 border rounded-lg bg-neutral-50">
-                        <a
-                          href={s.fileUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 text-primary hover:underline"
-                        >
-                          <Upload className="w-5 h-5" />
-                          <span className="font-medium text-lg">{s.fileName || "Download File"}</span>
-                        </a>
-                        {s.description && (
-                          <p className="text-sm text-muted-foreground mt-3">{s.description}</p>
-                        )}
+                    <div className="md:col-span-9">
+                      <div className="max-w-3xl">
+                        <div className="p-6 border rounded-lg bg-neutral-50">
+                          <a
+                            href={s.fileUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 text-primary hover:underline"
+                          >
+                            <Upload className="w-5 h-5" />
+                            <span className="font-medium text-lg">{s.fileName || "Download File"}</span>
+                          </a>
+                          {s.description && (
+                            <p className="text-sm text-muted-foreground mt-3">{s.description}</p>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>

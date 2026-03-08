@@ -12,7 +12,7 @@ async function getProjects(): Promise<Project[]> {
     .from("projects")
     .select("*")
     .eq("status", "published")
-    .order("featured", { ascending: false })
+    .order("order", { ascending: true })
     .order("created_at", { ascending: false });
 
   if (error || !data) {
@@ -27,6 +27,7 @@ async function getProjects(): Promise<Project[]> {
     status: row.status,
     featured: row.featured,
     private: row.private || false,
+    order: row.order || 0,
     slug: row.slug,
     keyFacts: {
       title: row.title,

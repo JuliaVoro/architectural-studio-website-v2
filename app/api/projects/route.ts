@@ -14,6 +14,8 @@ function mapRowToProject(row: any): Project {
     updatedAt: row.updated_at,
     status: row.status,
     featured: row.featured,
+    private: row.private || false,
+    order: row.order || 0,
     slug: row.slug,
     keyFacts: {
       title: row.title,
@@ -98,6 +100,8 @@ export async function POST(request: NextRequest) {
       .insert({
         status: "published",
         featured: false,
+        private: false,
+        order: 0, // Will be updated after getting the count
         slug: layout.slug,
         title: layout.title,
         location: payload.keyFacts.location ?? null,

@@ -44,7 +44,7 @@ function SectionEditor({ section, index, onUpdate, onDelete, onMoveUp, onMoveDow
     setIsEditing(false);
   };
 
-  const handleMediaUpload = async (file: File, mediaType: 'image' | 'video' | 'drawing') => {
+  const handleMediaUpload = async (file: File, mediaType: 'image' | 'video' | 'drawing' | 'thumbnail') => {
     setUploadingMedia(mediaType);
     
     try {
@@ -69,6 +69,8 @@ function SectionEditor({ section, index, onUpdate, onDelete, onMoveUp, onMoveDow
         setEditData({ ...editData, imagePath: filePath } as any);
       } else if (section.type === "video" && mediaType === 'video') {
         setEditData({ ...editData, videoPath: filePath } as any);
+      } else if (section.type === "video" && mediaType === 'thumbnail') {
+        setEditData({ ...editData, thumbnailPath: filePath } as any);
       } else if (section.type === "gallery_grid" && mediaType === 'image') {
         const currentPaths = (editData as any).imagePaths || [];
         setEditData({ ...editData, imagePaths: [...currentPaths, filePath] } as any);
@@ -245,7 +247,11 @@ function SectionEditor({ section, index, onUpdate, onDelete, onMoveUp, onMoveDow
                 src={getProjectMediaUrl((editData as any).videoPath || (section as any).videoPath)}
                 controls
                 className="w-full h-full"
-                poster="/placeholder.jpg"
+                poster={
+                  (editData as any).thumbnailPath || (section as any).thumbnailPath
+                    ? getProjectMediaUrl((editData as any).thumbnailPath || (section as any).thumbnailPath)
+                    : "/placeholder.jpg"
+                }
               />
             </div>
             {isEditing ? (
@@ -263,6 +269,41 @@ function SectionEditor({ section, index, onUpdate, onDelete, onMoveUp, onMoveDow
                   onChange={(e) => setEditData({ ...editData, label: e.target.value } as any)}
                   placeholder="Video label"
                 />
+                <Label>Thumbnail Image</Label>
+                <div className="space-y-2">
+                  <p className="text-xs text-muted-foreground">
+                    Upload a custom thumbnail image or leave empty to use video frame
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleMediaUpload(file, 'thumbnail');
+                      }}
+                      className="flex-1"
+                    />
+                    {uploadingMedia === 'thumbnail' && <Loader2 className="w-4 h-4 animate-spin" />}
+                  </div>
+                  {(editData as any).thumbnailPath && (
+                    <div className="flex items-center gap-2">
+                      <img
+                        src={getProjectMediaUrl((editData as any).thumbnailPath)}
+                        alt="Thumbnail preview"
+                        className="w-16 h-16 object-cover rounded"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setEditData({ ...editData, thumbnailPath: "" } as any)}
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  )}
+                </div>
                 <Label>Replace Video</Label>
                 <div className="flex items-center gap-2">
                   <Input
@@ -728,6 +769,7 @@ export default function ProjectEditForm({ project }: ProjectEditFormProps) {
     story: project.story || "",
     heroImagePath: project.heroImagePath || "",
     private: project.private || false,
+    order: project.order || 0,
   });
 
   const handleHeroImageUpload = async (file: File) => {
@@ -886,6 +928,7 @@ export default function ProjectEditForm({ project }: ProjectEditFormProps) {
           hero_image_path: formData.heroImagePath || null,
           sections: sections,
           private: formData.private,
+          order: formData.order,
           updated_at: new Date().toISOString(),
         })
         .eq("id", project.id);

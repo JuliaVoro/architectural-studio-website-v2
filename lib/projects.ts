@@ -65,6 +65,7 @@ export interface MaterialsTableSection extends BaseSection {
 export interface VideoSection extends BaseSection {
   type: "video";
   videoPath: string;
+  thumbnailPath?: string;
   caption?: string;
 }
 
@@ -106,6 +107,7 @@ export interface Project {
   status: ProjectStatus;
   featured: boolean;
   private: boolean;
+  order?: number;
   slug: string;
   keyFacts: ProjectKeyFacts;
   notes?: string;

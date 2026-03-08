@@ -310,7 +310,7 @@ export default async function SystemDetailPage({ params }: Props) {
                   <div key={s.id} className="grid grid-cols-1 gap-16 md:grid-cols-12">
                     <div className="md:col-span-1">
                       <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
-                        Video
+                        {s.label || "Video"}
                       </p>
                     </div>
                     <div className="md:col-span-8">
@@ -319,7 +319,7 @@ export default async function SystemDetailPage({ params }: Props) {
                           src={getProjectMediaUrl(s.videoPath)}
                           controls
                           className="w-full h-full"
-                          poster="/placeholder.jpg"
+                          poster={s.thumbnailPath ? getProjectMediaUrl(s.thumbnailPath) : "/placeholder.jpg"}
                         />
                       </div>
                       {hasUniqueCaption && (

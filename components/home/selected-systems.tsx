@@ -36,7 +36,7 @@ export function SelectedStories() {
         .from("projects")
         .select("*")
         .eq("status", "published")
-        .order("featured", { ascending: false })
+        .order("order", { ascending: true })
         .order("created_at", { ascending: false })
         .limit(4);
 
@@ -53,6 +53,7 @@ export function SelectedStories() {
         status: row.status,
         featured: row.featured,
         private: row.private || false,
+        order: row.order || 0,
         slug: row.slug,
         keyFacts: {
           title: row.title,

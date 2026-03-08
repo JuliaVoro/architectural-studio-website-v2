@@ -7,16 +7,35 @@ import type { Project } from "@/lib/projects";
 import { getProjectMediaUrl } from "@/lib/projects";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
+import { GripVertical } from "lucide-react";
 
-async function getProjects(): Promise<Project[]> {
+async function getProjects(sortBy: string = 'order', sortOrder: 'asc' | 'desc' = 'asc'): Promise<Project[]> {
   if (!supabaseBrowserClient) {
     return [];
   }
 
-  const { data, error } = await supabaseBrowserClient
+  let query = supabaseBrowserClient
     .from("projects")
-    .select("*")
-    .order("created_at", { ascending: false });
+    .select("*");
+
+  // Apply sorting
+  if (sortBy === 'featured') {
+    query = query.order('featured', { ascending: false }).order('created_at', { ascending: false });
+  } else if (sortBy === 'title') {
+    query = query.order('title', { ascending: sortOrder === 'asc' });
+  } else if (sortBy === 'status') {
+    query = query.order('status', { ascending: sortOrder === 'asc' });
+  } else if (sortBy === 'private') {
+    query = query.order('private', { ascending: sortOrder === 'asc' });
+  } else if (sortBy === 'order') {
+    // Try to sort by order, fallback to created_at if column doesn't exist
+    query = query.order('order', { ascending: true }).order('created_at', { ascending: false });
+  } else {
+    // Default: created_at
+    query = query.order(sortBy, { ascending: sortOrder === 'asc' });
+  }
+
+  const { data, error } = await query;
 
   if (error || !data) {
     console.error("Error loading projects:", error);
@@ -29,6 +48,8 @@ async function getProjects(): Promise<Project[]> {
     updatedAt: row.updated_at,
     status: row.status,
     featured: row.featured,
+    private: row.private || false,
+    order: row.order || 0,
     slug: row.slug,
     keyFacts: {
       title: row.title,
@@ -72,22 +93,25 @@ async function deleteProject(id: string): Promise<boolean> {
 export default function AdminProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
+  const [sortBy, setSortBy] = useState('created_at'); // Temporarily default to created_at
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [draggedProject, setDraggedProject] = useState<Project | null>(null);
 
   useEffect(() => {
     async function loadProjects() {
-      const projectsData = await getProjects();
+      const projectsData = await getProjects(sortBy, sortOrder);
       setProjects(projectsData);
       setLoading(false);
     }
     loadProjects();
-  }, []);
+  }, [sortBy, sortOrder]);
 
   const handleStatusUpdate = async (id: string, status: string) => {
     const success = await updateProjectStatus(id, status);
     if (success) {
       // Update the local state
       setProjects(prev => prev.map(p => 
-        p.id === id ? { ...p, status } : p
+        p.id === id ? { ...p, status: status as any } : p
       ));
     }
     return success;
@@ -100,6 +124,52 @@ export default function AdminProjectsPage() {
         setProjects(prev => prev.filter(p => p.id !== id));
       }
     }
+  };
+
+  const handleDragStart = (project: Project) => {
+    setDraggedProject(project);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = async (e: React.DragEvent, targetProject: Project) => {
+    e.preventDefault();
+    
+    if (!draggedProject || draggedProject.id === targetProject.id) return;
+
+    // Reorder projects in state
+    const newProjects = [...projects];
+    const draggedIndex = newProjects.findIndex(p => p.id === draggedProject.id);
+    const targetIndex = newProjects.findIndex(p => p.id === targetProject.id);
+    
+    // Remove dragged project and insert at target position
+    newProjects.splice(draggedIndex, 1);
+    newProjects.splice(targetIndex, 0, draggedProject);
+    
+    // Update order values based on new positions
+    const updatedProjects = newProjects.map((project, index) => ({
+      ...project,
+      order: index
+    }));
+
+    setProjects(updatedProjects);
+    
+    // Update database
+    await updateProjectOrders(updatedProjects);
+    setDraggedProject(null);
+  };
+
+  const updateProjectOrders = async (projects: Project[]) => {
+    const updates = projects.map(project => 
+      supabaseBrowserClient
+        .from("projects")
+        .update({ order: project.order })
+        .eq("id", project.id)
+    );
+    
+    await Promise.all(updates);
   };
 
   return (
@@ -122,6 +192,36 @@ export default function AdminProjectsPage() {
         </Link>
       </header>
 
+      {/* Sorting Controls */}
+      <div className="flex items-center gap-4 text-sm">
+        <span className="text-neutral-600">Sort by:</span>
+        <select
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value)}
+          className="px-3 py-1 border border-neutral-300 rounded-md bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900"
+        >
+          <option value="order">Manual Order</option>
+          <option value="featured">Featured</option>
+          <option value="title">Title</option>
+          <option value="status">Status</option>
+          <option value="private">Privacy</option>
+          <option value="created_at">Date Created</option>
+        </select>
+        
+        <select
+          value={sortOrder}
+          onChange={(e) => setSortOrder(e.target.value as 'asc' | 'desc')}
+          className="px-3 py-1 border border-neutral-300 rounded-md bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900"
+        >
+          <option value="desc">Newest First</option>
+          <option value="asc">Oldest First</option>
+        </select>
+        
+        <span className="text-neutral-500">
+          {projects.length} {projects.length === 1 ? 'story' : 'stories'}
+        </span>
+      </div>
+
       <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
         {loading ? (
           // Loading skeleton
@@ -138,8 +238,20 @@ export default function AdminProjectsPage() {
             </p>
           </div>
         ) : (
-          projects.map((project) => (
-            <div key={project.id} className="group relative">
+          projects.map((project, index) => (
+            <div 
+              key={project.id} 
+              className="group relative"
+              draggable={sortBy === 'order'}
+              onDragStart={() => handleDragStart(project)}
+              onDragOver={handleDragOver}
+              onDrop={(e) => handleDrop(e, project)}
+            >
+              {sortBy === 'order' && (
+                <div className="absolute top-2 left-2 z-10 bg-white/90 rounded p-1 cursor-move">
+                  <GripVertical className="w-4 h-4 text-neutral-600" />
+                </div>
+              )}
               <div className="relative aspect-[16/10] w-full overflow-hidden bg-sand rounded-lg border border-neutral-200">
                 <Image
                   src={project.heroImagePath ? getProjectMediaUrl(project.heroImagePath) : "/placeholder.jpg"}
@@ -165,6 +277,7 @@ export default function AdminProjectsPage() {
                   </div>
                   
                   <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2">
                     <span className={`rounded-full border px-2 py-1 text-[11px] uppercase tracking-[0.18em] ${
                     project.status === 'published' 
                         ? 'border-green-300 text-green-700 bg-green-50' 
@@ -174,6 +287,19 @@ export default function AdminProjectsPage() {
                     }`}>
                       {project.status}
                     </span>
+                    
+                    {project.featured && (
+                      <span className="rounded-full border px-2 py-1 text-[11px] uppercase tracking-[0.18em] border-purple-300 text-purple-700 bg-purple-50">
+                        Featured
+                      </span>
+                    )}
+                    
+                    {project.private && (
+                      <span className="rounded-full border px-2 py-1 text-[11px] uppercase tracking-[0.18em] border-gray-300 text-gray-700 bg-gray-50">
+                        Private
+                      </span>
+                    )}
+                  </div>
                     
                     <div className="flex items-center gap-2">
                     <Link

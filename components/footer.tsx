@@ -53,7 +53,7 @@ export function Footer() {
               </li>
               <li>
                 <span className="text-sm text-foreground">
-                  Amsterdam, NL
+                  Milan, Italy
                 </span>
               </li>
             </ul>

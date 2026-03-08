@@ -57,21 +57,27 @@ export async function POST(request: Request) {
 
     // Send email notification
     try {
-      await resend.emails.send({
-        from: "Service Architecture Studio <onboarding@resend.dev>",
-        to: "iuliia.vorobiova5@gmail.com",
-        subject: `New Contact Form Submission from ${name}`,
-        html: `
-          <h2>New Contact Form Submission</h2>
-          <p><strong>Name:</strong> ${name}</p>
-          <p><strong>Email:</strong> ${email}</p>
-          <p><strong>Organization:</strong> ${organization || "Not provided"}</p>
-          <p><strong>Message:</strong></p>
-          <p>${message.replace(/\n/g, "<br>")}</p>
-          <hr>
-          <p><small>Submitted at: ${new Date().toLocaleString()}</small></p>
-        `,
-      });
+      console.log("Attempting to send email with RESEND_API_KEY:", process.env.RESEND_API_KEY ? "Key exists" : "No key");
+      if (process.env.RESEND_API_KEY) {
+        const emailResult = await resend.emails.send({
+          from: "Service Architecture Studio <onboarding@resend.dev>",
+          to: "iuliia.vorobiova@gmail.com",
+          subject: `New Contact Form Submission from ${name}`,
+          html: `
+            <h2>New Contact Form Submission</h2>
+            <p><strong>Name:</strong> ${name}</p>
+            <p><strong>Email:</strong> ${email}</p>
+            <p><strong>Organization:</strong> ${organization || "Not provided"}</p>
+            <p><strong>Message:</strong></p>
+            <p>${message.replace(/\n/g, "<br>")}</p>
+            <hr>
+            <p><small>Submitted at: ${new Date().toLocaleString()}</small></p>
+          `,
+        });
+        console.log("Email sent successfully:", emailResult);
+      } else {
+        console.log("RESEND_API_KEY not found, skipping email");
+      }
     } catch (emailError) {
       console.error("Error sending email:", emailError);
       // Don't fail the form submission if email fails

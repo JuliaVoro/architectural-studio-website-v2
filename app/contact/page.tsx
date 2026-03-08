@@ -43,7 +43,7 @@ export default function ContactPage() {
                   Location
                 </p>
                 <p className="mt-3 text-base text-foreground">
-                  Amsterdam, Netherlands
+                  Milan, Italy
                 </p>
               </div>
               <div>

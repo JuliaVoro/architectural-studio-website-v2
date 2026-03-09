@@ -157,6 +157,7 @@ export default async function SystemDetailPage({ params }: Props) {
             src={getProjectMediaUrl(project.heroImagePath)}
             alt={project.keyFacts.title}
             className="w-full h-auto max-h-[80vh] object-cover"
+            loading="eager"
           />
           {/* Dark overlay mask - matching main page */}
           <div className="absolute inset-0 bg-[#0a0f14]/40" />

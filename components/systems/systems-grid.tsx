@@ -30,13 +30,14 @@ export function StoriesGrid({ projects }: StoriesGridProps) {
                 }}
               >
                 <div className="relative aspect-[16/10] w-full overflow-hidden bg-sand">
-                  <Image
-                    src={project.heroImagePath ? getProjectMediaUrl(project.heroImagePath) : "/placeholder.jpg"}
-                    alt={project.keyFacts.title}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 768px) 100vw, 50vw"
-                  />
+                <Image
+                  src={project.heroImagePath ? getProjectMediaUrl(project.heroImagePath) : "/placeholder.jpg"}
+                  alt={project.keyFacts.title}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  loading="eager"
+                />
                   <div className="absolute top-4 right-4 rounded-full bg-black/70 p-2">
                     <Lock className="w-4 h-4 text-white" />
                   </div>
@@ -78,6 +79,7 @@ export function StoriesGrid({ projects }: StoriesGridProps) {
                   fill
                   className="object-cover transition-transform duration-700 group-hover:scale-[1.02]"
                   sizes="(max-width: 768px) 100vw, 50vw"
+                  loading="eager"
                 />
               </div>
               <div className="mt-5">

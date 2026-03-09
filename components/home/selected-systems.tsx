@@ -162,6 +162,7 @@ export function SelectedStories() {
                           fill
                           className="object-cover"
                           sizes="(max-width: 768px) 100vw, 50vw"
+                          loading="eager"
                         />
                       </>
                     ) : (
@@ -230,6 +231,7 @@ export function SelectedStories() {
                           fill
                           className="object-cover transition-transform duration-700 group-hover:scale-[1.02]"
                           sizes="(max-width: 768px) 100vw, 50vw"
+                          loading="eager"
                         />
                         <div className="absolute bottom-4 left-4 rounded-full bg-black/70 p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                           <Play className="w-4 h-4 text-white" />

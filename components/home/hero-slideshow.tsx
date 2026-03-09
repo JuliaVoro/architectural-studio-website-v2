@@ -87,37 +87,6 @@ const ImageSlide = memo(function ImageSlide({
   );
 });
 
-// Static progress bars - no animation
-const ProgressBars = memo(function ProgressBars({
-  slides,
-  current,
-  onSlideClick,
-}: {
-  slides: Slide[];
-  current: number;
-  onSlideClick: (index: number) => void;
-}) {
-  return (
-    <div className="flex items-center gap-1">
-      {slides.map((_, index) => (
-        <button
-          key={`progress-${index}`}
-          onClick={() => onSlideClick(index)}
-          className="group relative flex h-8 flex-1 items-end"
-          aria-label={`Go to slide ${index + 1}`}
-        >
-          <div
-            className={cn(
-              "h-[2px] w-full transition-colors duration-300",
-              index <= current ? "bg-cream" : "bg-cream/20 group-hover:bg-cream/30",
-            )}
-          />
-        </button>
-      ))}
-    </div>
-  );
-});
-
 export function HeroSlideshow() {
   const [slides, setSlides] = useState<Slide[]>([]);
   const [current, setCurrent] = useState(0);
@@ -330,11 +299,8 @@ export function HeroSlideshow() {
             </div>
           </div>
 
-          {/* Progress bars */}
-          <ProgressBars slides={slides} current={current} onSlideClick={handleSlideClick} />
-
           {/* Counter */}
-          <div className="mt-4 flex items-center justify-between">
+          <div className="flex items-center justify-between">
             <span className="text-[11px] font-medium tabular-nums tracking-[0.1em] text-cream/50">
               {String(current + 1).padStart(2, "0")}
               {" / "}

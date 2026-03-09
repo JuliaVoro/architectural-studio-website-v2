@@ -48,6 +48,23 @@ export default function AdminHomePage() {
             View →
           </div>
         </Link>
+        <Link
+          href="/admin/hero-slides"
+          className="group flex flex-col justify-between rounded-lg border border-neutral-200 bg-white p-4 transition hover:border-neutral-900"
+        >
+          <div>
+            <div className="mb-2 text-xs font-medium uppercase tracking-[0.2em] text-neutral-500">
+              Header Slider
+            </div>
+            <p className="text-sm text-neutral-600">
+              Edit the homepage hero slideshow. Add, hide, or remove slides and
+              adjust their text and media URLs.
+            </p>
+          </div>
+          <div className="mt-4 text-xs font-medium uppercase tracking-[0.2em] text-neutral-900">
+            Edit →
+          </div>
+        </Link>
       </div>
     </div>
   );

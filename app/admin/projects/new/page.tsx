@@ -174,7 +174,7 @@ export default function NewProjectPage() {
 
       if (slug) {
         setTimeout(() => {
-          router.push(`/systems/${slug}`);
+          router.push(`/sStories/${slug}`);
         }, 800);
       }
     } catch (err) {

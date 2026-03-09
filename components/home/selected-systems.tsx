@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { supabaseBrowserClient } from "@/lib/supabase-client";
 import type { Project } from "@/lib/projects";
 import { getProjectMediaUrl } from "@/lib/projects";
-import { Lock } from "lucide-react";
+import { Lock, Play } from "lucide-react";
 
 export function SelectedStories() {
   const sectionRef = useRef<HTMLElement>(null);
@@ -65,8 +65,10 @@ export function SelectedStories() {
         },
         notes: row.notes ?? undefined,
         heroImagePath: row.hero_image_path ?? undefined,
+        heroVideoPath: row.hero_video_path ?? undefined,
         introText: row.intro_text ?? undefined,
         story: row.story ?? undefined,
+        storyLabel: row.story_label ?? undefined,
         sections: row.sections ?? undefined,
         aiRawResponse: row.ai_raw_response ?? undefined,
       }));
@@ -122,6 +124,7 @@ export function SelectedStories() {
           ) : projects.length > 0 ? (
             projects.map((project, index) => {
               const isPrivate = project.private;
+              const hasVideo = project.heroVideoPath;
               
               if (isPrivate) {
                 // Private story - no navigation, show NDA icon
@@ -136,6 +139,32 @@ export function SelectedStories() {
                     }}
                   >
                     <div className="relative aspect-[16/10] w-full overflow-hidden bg-sand">
+                    {hasVideo ? (
+                      <>
+                        <video
+                          src={project.heroVideoPath ? getProjectMediaUrl(project.heroVideoPath) : ""}
+                          muted
+                          loop
+                          playsInline
+                          preload="metadata"
+                          className="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                          onMouseEnter={(e) => {
+                            e.currentTarget.play().catch(err => console.log('Video play error:', err));
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.pause();
+                            e.currentTarget.currentTime = 0;
+                          }}
+                        />
+                        <Image
+                          src={project.heroImagePath ? getProjectMediaUrl(project.heroImagePath) : "/placeholder.jpg"}
+                          alt={project.keyFacts.title}
+                          fill
+                          className="object-cover"
+                          sizes="(max-width: 768px) 100vw, 50vw"
+                        />
+                      </>
+                    ) : (
                       <Image
                         src={project.heroImagePath ? getProjectMediaUrl(project.heroImagePath) : "/placeholder.jpg"}
                         alt={project.keyFacts.title}
@@ -143,10 +172,11 @@ export function SelectedStories() {
                         className="object-cover"
                         sizes="(max-width: 768px) 100vw, 50vw"
                       />
-                      <div className="absolute top-4 right-4 rounded-full bg-black/70 p-2">
-                        <Lock className="w-4 h-4 text-white" />
-                      </div>
+                    )}
+                    <div className="absolute top-4 right-4 rounded-full bg-black/70 p-2">
+                      <Lock className="w-4 h-4 text-white" />
                     </div>
+                  </div>
                     <div className="mt-5">
                       <div className="flex items-center gap-2">
                         <h3 className="text-base font-medium text-foreground">
@@ -177,13 +207,43 @@ export function SelectedStories() {
                   }}
                 >
                   <div className="relative aspect-[16/10] w-full overflow-hidden bg-sand">
-                    <Image
-                      src={project.heroImagePath ? getProjectMediaUrl(project.heroImagePath) : "/placeholder.jpg"}
-                      alt={project.keyFacts.title}
-                      fill
-                      className="object-cover transition-transform duration-700 group-hover:scale-[1.02]"
-                      sizes="(max-width: 768px) 100vw, 50vw"
-                    />
+                    {hasVideo ? (
+                      <>
+                        <video
+                          src={project.heroVideoPath ? getProjectMediaUrl(project.heroVideoPath) : ""}
+                          muted
+                          loop
+                          playsInline
+                          preload="metadata"
+                          className="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                          onMouseEnter={(e) => {
+                            e.currentTarget.play().catch(err => console.log('Video play error:', err));
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.pause();
+                            e.currentTarget.currentTime = 0;
+                          }}
+                        />
+                        <Image
+                          src={project.heroImagePath ? getProjectMediaUrl(project.heroImagePath) : "/placeholder.jpg"}
+                          alt={project.keyFacts.title}
+                          fill
+                          className="object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+                          sizes="(max-width: 768px) 100vw, 50vw"
+                        />
+                        <div className="absolute bottom-4 left-4 rounded-full bg-black/70 p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                          <Play className="w-4 h-4 text-white" />
+                        </div>
+                      </>
+                    ) : (
+                      <Image
+                        src={project.heroImagePath ? getProjectMediaUrl(project.heroImagePath) : "/placeholder.jpg"}
+                        alt={project.keyFacts.title}
+                        fill
+                        className="object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+                        sizes="(max-width: 768px) 100vw, 50vw"
+                      />
+                    )}
                   </div>
                   <div className="mt-5">
                     <h3 className="text-base font-medium text-foreground">

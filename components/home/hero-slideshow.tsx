@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { defaultHeroSlides } from "@/lib/hero-slides";
 
 type Slide = {
   type: "image" | "video";
@@ -14,57 +15,17 @@ type Slide = {
   location: string;
 };
 
-const slides: Slide[] = [
-  {
-    type: "video",
-    src: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/stairs-iDqt60Un21rkelbbMx9n414hrC0xn4.mp4",
-    poster: "/images/poster-bude.jpg",
-    title: "Bude Plus",
-    subtitle: "Retail",
-    location: "Tbilisi, Georgia",
-  },
-  {
-    type: "video",
-    src: "/videos/kidsroom2.mp4",
-    poster: "/images/slide-lobby.jpg",
-    title: "Kids room",
-    subtitle: "Residential",
-    location: "Tbilisi, Georgia",
-  },
-  {
-    type: "image",
-    src: "/images/building-final.jpg",
-    title: "Dudeo Building",
-    subtitle: "Commercial Architecture",
-    location: "Tbilisi, Georgia",
-  },
-  {
-    type: "video",
-    src: "/videos/appartment.mp4",
-    poster: "/images/slide-retail.jpg",
-    title: "Residencial Appartment",
-    subtitle: "Residential",
-    location: "Tbilisi, Georgia",
-  },
-  {
-    type: "video",
-    src: "/videos/badroom.mp4",
-    poster: "/images/slide-workspace.jpg",
-    title: "Residencial 2",
-    subtitle: "Residential",
-    location: "Tbilisi, Georgia",
-  },
-  {
-    type: "video",
-    src: "/videos/office.mp4",
-    poster: "/images/poster-office.jpg",
-    title: "Office Project",
-    subtitle: "Commercial",
-    location: "Tbilisi, Georgia",
-  },
-];
-
 export function HeroSlideshow() {
+  const [slides, setSlides] = useState<Slide[]>(
+    defaultHeroSlides.map((s) => ({
+      type: s.type,
+      src: s.src,
+      poster: s.poster ?? undefined,
+      title: s.title,
+      subtitle: s.label,
+      location: s.subtitle,
+    })),
+  );
   const [current, setCurrent] = useState(0);
   const [previous, setPrevious] = useState(-1);
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -75,6 +36,44 @@ export function HeroSlideshow() {
   const [isBuffering, setIsBuffering] = useState(false);
   const videoRefs = useRef<Map<number, HTMLVideoElement>>(new Map());
   const hasInitialized = useRef(false);
+
+  // Load dynamic slides from API (if configured)
+  useEffect(() => {
+    async function loadSlides() {
+      try {
+        const res = await fetch("/api/hero-slides", { cache: "no-store" });
+        if (!res.ok) return;
+        const data = (await res.json()) as {
+          slides: Array<{
+            id: string;
+            type: "image" | "video";
+            src: string;
+            poster?: string | null;
+            label: string;
+            title: string;
+            subtitle: string;
+            hidden: boolean;
+          }>;
+        };
+        const active = data.slides.filter((s) => !s.hidden);
+        if (!active.length) return;
+        const mapped: Slide[] = active.map((s) => ({
+          type: s.type,
+          src: s.src,
+          poster: s.poster ?? undefined,
+          title: s.title,
+          subtitle: s.label,
+          location: s.subtitle,
+        }));
+        setSlides(mapped);
+        setCurrent(0);
+      } catch {
+        // Ignore and keep defaults
+      }
+    }
+
+    loadSlides();
+  }, []);
 
   const SLIDE_DURATION = 3000; // 3 seconds for all slides
   const TRANSITION_MS = 1000;

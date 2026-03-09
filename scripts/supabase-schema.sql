@@ -46,3 +46,22 @@ create index if not exists projects_featured_created_at_idx
 --   'public', true
 -- ));
 
+-- Homepage hero slides for the main header slideshow
+create table if not exists public.hero_slides (
+  id uuid primary key default gen_random_uuid(),
+  created_at timestamptz not null default timezone('utc'::text, now()),
+  updated_at timestamptz not null default timezone('utc'::text, now()),
+  order_index integer not null default 0,
+  hidden boolean not null default false,
+  type text not null check (type in ('image', 'video')),
+  src text not null,              -- image or video URL
+  poster text,                    -- optional poster for videos
+  label text not null,            -- e.g. Commercial, Residential
+  title text not null,            -- e.g. Showroom, Urban Retreat
+  subtitle text not null          -- e.g. Retail as immersive experience
+);
+
+create index if not exists hero_slides_order_idx
+  on public.hero_slides (hidden asc, order_index asc, created_at asc);
+
+

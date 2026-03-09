@@ -3,10 +3,8 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET() {
   if (!supabaseServerClient) {
-    return NextResponse.json(
-      { error: "Supabase not configured" },
-      { status: 500 }
-    );
+    console.error("[v0] Supabase not configured");
+    return NextResponse.json({ template_type: "slider" });
   }
 
   try {
@@ -17,25 +15,21 @@ export async function GET() {
       .single();
 
     if (error) {
-      console.error("Error fetching hero config:", error);
-      return NextResponse.json(
-        { error: "Failed to fetch configuration" },
-        { status: 500 }
-      );
+      console.error("[v0] Error fetching hero config:", error.message);
+      // Table might not exist yet - return default
+      return NextResponse.json({ template_type: "slider" });
     }
 
     return NextResponse.json(data);
   } catch (error) {
-    console.error("Error in GET /api/hero-config:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    console.error("[v0] Exception in GET /api/hero-config:", error);
+    return NextResponse.json({ template_type: "slider" });
   }
 }
 
 export async function PUT(request: NextRequest) {
   if (!supabaseServerClient) {
+    console.error("[v0] Supabase not configured");
     return NextResponse.json(
       { error: "Supabase not configured" },
       { status: 500 }
@@ -44,6 +38,7 @@ export async function PUT(request: NextRequest) {
 
   try {
     const body = await request.json();
+    console.log("[v0] Updating hero config:", body);
 
     // Get the current active config
     const { data: currentConfig, error: fetchError } = await supabaseServerClient
@@ -53,22 +48,26 @@ export async function PUT(request: NextRequest) {
       .single();
 
     if (fetchError && fetchError.code !== "PGRST116") {
-      throw fetchError;
+      console.error("[v0] Error fetching current config:", fetchError.message);
+      return NextResponse.json(
+        { error: "Failed to fetch current configuration" },
+        { status: 500 }
+      );
     }
 
-    // Update the active config
     const updateData = {
       template_type: body.template_type,
-      split_title: body.split_title,
-      split_subtitle: body.split_subtitle,
-      split_description: body.split_description,
-      split_media_url: body.split_media_url,
-      split_media_type: body.split_media_type,
-      split_layout: body.split_layout,
+      split_title: body.split_title || null,
+      split_subtitle: body.split_subtitle || null,
+      split_description: body.split_description || null,
+      split_media_url: body.split_media_url || null,
+      split_media_type: body.split_media_type || "image",
+      split_layout: body.split_layout || "media-right",
       updated_at: new Date().toISOString(),
     };
 
     if (currentConfig?.id) {
+      console.log("[v0] Updating existing config ID:", currentConfig.id);
       const { data, error } = await supabaseServerClient
         .from("hero_template_config")
         .update(updateData)
@@ -76,9 +75,17 @@ export async function PUT(request: NextRequest) {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error("[v0] Error updating config:", error.message);
+        return NextResponse.json(
+          { error: "Failed to update configuration", details: error.message },
+          { status: 500 }
+        );
+      }
+      console.log("[v0] Config updated successfully");
       return NextResponse.json(data);
     } else {
+      console.log("[v0] Creating new hero config");
       const { data, error } = await supabaseServerClient
         .from("hero_template_config")
         .insert({
@@ -88,13 +95,23 @@ export async function PUT(request: NextRequest) {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error("[v0] Error creating config:", error.message);
+        return NextResponse.json(
+          { error: "Failed to create configuration", details: error.message },
+          { status: 500 }
+        );
+      }
+      console.log("[v0] Config created successfully");
       return NextResponse.json(data);
     }
   } catch (error) {
-    console.error("Error in PUT /api/hero-config:", error);
+    console.error("[v0] Exception in PUT /api/hero-config:", error);
     return NextResponse.json(
-      { error: "Failed to update configuration" },
+      {
+        error: "Internal server error",
+        details: error instanceof Error ? error.message : String(error),
+      },
       { status: 500 }
     );
   }

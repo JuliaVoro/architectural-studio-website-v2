@@ -78,25 +78,34 @@ export default function HeroTemplatePage() {
       setError(null);
       setSuccess(false);
 
+      console.log("[v0] Saving hero config:", formData);
+
       const response = await fetch("/api/hero-config", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
 
+      const data = await response.json();
+      console.log("[v0] Response:", data);
+
       if (!response.ok) {
-        throw new Error("Failed to save configuration");
+        throw new Error(
+          data.error || data.details || "Failed to save configuration"
+        );
       }
 
-      const data = await response.json();
       setConfig(data);
       setSuccess(true);
+      console.log("[v0] Configuration saved successfully");
 
       // Clear success message after 3 seconds
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save changes");
-      console.error(err);
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to save changes";
+      setError(errorMessage);
+      console.error("[v0] Error saving config:", errorMessage);
     } finally {
       setIsSaving(false);
     }

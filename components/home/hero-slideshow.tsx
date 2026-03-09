@@ -23,29 +23,19 @@ const VideoSlide = memo(function VideoSlide({
   isActive: boolean;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const hasStartedRef = useRef(false);
 
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
     if (isActive) {
-      // Only reset on first activation
-      if (!hasStartedRef.current) {
-        video.currentTime = 0;
-        hasStartedRef.current = true;
-      }
-      // Play the video
-      const playPromise = video.play();
-      if (playPromise !== undefined) {
-        playPromise.catch(() => {
-          console.log("[v0] Video autoplay failed");
-        });
-      }
+      // Just play - don't reset currentTime
+      video.play().catch(() => {
+        console.log("[v0] Video autoplay blocked");
+      });
     } else {
-      // Pause when inactive
+      // Pause when not active
       video.pause();
-      hasStartedRef.current = false;
     }
   }, [isActive]);
 
@@ -63,11 +53,14 @@ const VideoSlide = memo(function VideoSlide({
         ref={videoRef}
         muted
         playsInline
-        preload="auto"
+        preload="metadata"
         loop={false}
         className="absolute inset-0 h-full w-full object-cover"
         poster={slide.poster}
         aria-label={`${slide.title} - ${slide.subtitle}`}
+        onEnded={() => {
+          console.log("[v0] Video ended");
+        }}
       >
         <source src={slide.src} type="video/mp4" />
       </video>

@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo, memo } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { defaultHeroSlides } from "@/lib/hero-slides";
 
@@ -14,6 +13,144 @@ type Slide = {
   subtitle: string;
   location: string;
 };
+
+// Memoized video slide to prevent unnecessary re-renders
+const VideoSlide = memo(function VideoSlide({
+  slide,
+  isActive,
+  isPrev,
+  transitionMs,
+  videoRef,
+}: {
+  slide: Slide;
+  isActive: boolean;
+  isPrev: boolean;
+  transitionMs: number;
+  videoRef: (el: HTMLVideoElement | null) => void;
+}) {
+  return (
+    <div
+      className={cn(
+        "absolute inset-0 transition-opacity",
+        isActive
+          ? "z-20 opacity-100"
+          : isPrev
+            ? "z-10 opacity-100"
+            : "z-0 opacity-0 pointer-events-none",
+      )}
+      style={{
+        transitionDuration: `${transitionMs}ms`,
+        transitionTimingFunction: "ease-in-out",
+        willChange: isActive || isPrev ? "opacity" : "auto",
+      }}
+    >
+      <video
+        ref={videoRef}
+        poster={slide.poster}
+        muted
+        playsInline
+        preload={isActive || isPrev ? "auto" : "metadata"}
+        loop={false}
+        className="absolute inset-0 h-full w-full object-cover"
+        aria-label={`${slide.title} - ${slide.subtitle} project in ${slide.location}`}
+      >
+        <source src={slide.src} type="video/mp4" />
+      </video>
+    </div>
+  );
+});
+
+// Memoized image slide to prevent unnecessary re-renders
+const ImageSlide = memo(function ImageSlide({
+  slide,
+  isActive,
+  isPrev,
+  transitionMs,
+  index,
+}: {
+  slide: Slide;
+  isActive: boolean;
+  isPrev: boolean;
+  transitionMs: number;
+  index: number;
+}) {
+  return (
+    <div
+      className={cn(
+        "absolute inset-0 transition-opacity",
+        isActive
+          ? "z-20 opacity-100"
+          : isPrev
+            ? "z-10 opacity-100"
+            : "z-0 opacity-0 pointer-events-none",
+      )}
+      style={{
+        transitionDuration: `${transitionMs}ms`,
+        transitionTimingFunction: "ease-in-out",
+        willChange: isActive || isPrev ? "opacity" : "auto",
+      }}
+    >
+      <div
+        className="absolute inset-0"
+        style={{
+          animation: isActive ? "kenBurnsOptimized 6000ms ease-out forwards" : "none",
+        }}
+      >
+        <Image
+          src={slide.src}
+          alt={`${slide.title} - ${slide.subtitle} project in ${slide.location}`}
+          fill
+          className="object-cover"
+          priority={index === 0}
+          loading={index === 0 ? "eager" : "lazy"}
+          sizes="100vw"
+        />
+      </div>
+    </div>
+  );
+});
+
+// Memoized progress bar for better performance
+const ProgressBar = memo(function ProgressBar({
+  slides,
+  current,
+  progress,
+  onSlideClick,
+}: {
+  slides: Slide[];
+  current: number;
+  progress: number;
+  onSlideClick: (index: number) => void;
+}) {
+  return (
+    <div className="flex items-center gap-1">
+      {slides.map((_, index) => (
+        <button
+          key={`progress-${index}`}
+          onClick={() => onSlideClick(index)}
+          className="group relative flex h-8 flex-1 items-end"
+          aria-label={`Go to slide ${index + 1}`}
+        >
+          <div className="h-[2px] w-full bg-cream/20 transition-all duration-300 group-hover:bg-cream/30">
+            <div
+              className="h-full bg-cream"
+              style={{
+                width:
+                  index === current
+                    ? `${progress}%`
+                    : index < current
+                      ? "100%"
+                      : "0%",
+                transitionDuration: index === current ? "0ms" : "400ms",
+                transitionTimingFunction: "linear",
+              }}
+            />
+          </div>
+        </button>
+      ))}
+    </div>
+  );
+});
 
 export function HeroSlideshow() {
   const [slides, setSlides] = useState<Slide[]>(
@@ -31,19 +168,16 @@ export function HeroSlideshow() {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [progress, setProgress] = useState(0);
   const [isHovering, setIsHovering] = useState(false);
-  
-  const videoRefs = useRef<Map<string, HTMLVideoElement>>(new Map());
+
+  const videoRefs = useRef<Map<number, HTMLVideoElement>>(new Map());
   const hasInitialized = useRef(false);
-  const autoAdvanceRef = useRef<NodeJS.Timeout | null>(null);
-  const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const progressAnimationRef = useRef<number | null>(null);
+  const autoAdvanceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const SLIDE_DURATION = 3000;
-  const TRANSITION_MS = 1000;
+  const SLIDE_DURATION = 5000;
+  const TRANSITION_MS = 800;
 
-  // Create unique IDs for slides to maintain references across reorders
-  const slideIds = useMemo(() => slides.map((_, i) => `slide-${i}`), [slides.length]);
-
-  // Load dynamic slides from API (if configured)
+  // Load dynamic slides from API
   useEffect(() => {
     let isMounted = true;
 
@@ -77,65 +211,56 @@ export function HeroSlideshow() {
         setCurrent(0);
         hasInitialized.current = false;
       } catch {
-        // Ignore and keep defaults
+        // Keep defaults
       }
     }
 
     loadSlides();
-
     return () => {
       isMounted = false;
     };
   }, []);
 
-  // Clean up old video refs when slides change
+  // Cleanup old video refs when slides change
   useEffect(() => {
-    // Clear refs that are no longer valid
-    const validIds = new Set(slideIds);
-    const entriesToDelete: string[] = [];
-    
-    videoRefs.current.forEach((_, key) => {
-      if (!validIds.has(key)) {
+    const entriesToDelete: number[] = [];
+    videoRefs.current.forEach((video, key) => {
+      if (key >= slides.length) {
         entriesToDelete.push(key);
-      }
-    });
-
-    entriesToDelete.forEach((key) => {
-      const video = videoRefs.current.get(key);
-      if (video) {
         video.pause();
         video.currentTime = 0;
       }
-      videoRefs.current.delete(key);
     });
+    entriesToDelete.forEach((key) => videoRefs.current.delete(key));
 
-    // Reset if current index is out of bounds
     if (current >= slides.length) {
       setCurrent(0);
       setPrevious(-1);
     }
-  }, [slides.length, slideIds]);
+  }, [slides.length]);
 
   // Pause non-active videos
   useEffect(() => {
-    slides.forEach((slide, index) => {
-      if (slide.type === "video") {
-        const id = slideIds[index];
-        const video = videoRefs.current.get(id);
-        if (video && index !== current && index !== previous) {
-          if (!video.paused) {
-            video.pause();
-            video.currentTime = 0;
-          }
+    slides.forEach((_, index) => {
+      const video = videoRefs.current.get(index);
+      if (video && index !== current && index !== previous) {
+        if (!video.paused) {
+          video.pause();
+          video.currentTime = 0;
         }
       }
     });
-  }, [current, previous, slides.length, slideIds]);
+  }, [current, previous, slides.length]);
 
-  // Go to specific slide
+  // Navigate to slide
   const goToSlide = useCallback(
     (index: number) => {
-      if (isTransitioning || index === current || index < 0 || index >= slides.length) {
+      if (
+        isTransitioning ||
+        index === current ||
+        index < 0 ||
+        index >= slides.length
+      ) {
         return;
       }
 
@@ -144,18 +269,16 @@ export function HeroSlideshow() {
       setCurrent(index);
       setProgress(0);
 
-      // Play new video
-      const newVideoId = slideIds[index];
-      const newVideo = videoRefs.current.get(newVideoId);
+      // Play new video immediately
+      const newVideo = videoRefs.current.get(index);
       if (newVideo) {
         newVideo.currentTime = 0;
         newVideo.play().catch(() => {});
       }
 
-      // Complete transition after duration
+      // Complete transition
       const timer = setTimeout(() => {
-        const oldVideoId = slideIds[current];
-        const oldVideo = videoRefs.current.get(oldVideoId);
+        const oldVideo = videoRefs.current.get(current);
         if (oldVideo) {
           oldVideo.pause();
           oldVideo.currentTime = 0;
@@ -166,77 +289,73 @@ export function HeroSlideshow() {
 
       return () => clearTimeout(timer);
     },
-    [current, isTransitioning, slides.length, slideIds],
+    [current, isTransitioning, slides.length],
   );
 
-  // Auto-advance to next slide
-  const nextSlide = useCallback(() => {
-    setCurrent((prev) => {
-      const next = (prev + 1) % slides.length;
-      goToSlide(next);
-      return prev;
-    });
-  }, [slides.length, goToSlide]);
-
-  // Initialize first video
-  useEffect(() => {
-    if (!hasInitialized.current && slides.length > 0) {
-      hasInitialized.current = true;
-
-      if (slides[0]?.type === "video") {
-        const firstVideoId = slideIds[0];
-        const firstVideo = videoRefs.current.get(firstVideoId);
-        if (firstVideo) {
-          const playPromise = firstVideo.play();
-          if (playPromise !== undefined) {
-            playPromise.catch(() => {
-              setTimeout(() => nextSlide(), 1000);
-            });
-          }
-        }
-      }
-    }
-  }, [slides.length, slideIds, nextSlide]);
-
-  // Main auto-advance loop
+  // Auto-advance slides with optimized progress tracking
   useEffect(() => {
     if (isTransitioning || isHovering || slides.length === 0) {
-      if (progressIntervalRef.current) {
-        clearInterval(progressIntervalRef.current);
-        progressIntervalRef.current = null;
+      if (progressAnimationRef.current) {
+        cancelAnimationFrame(progressAnimationRef.current);
+        progressAnimationRef.current = null;
+      }
+      if (autoAdvanceTimeoutRef.current) {
+        clearTimeout(autoAdvanceTimeoutRef.current);
+        autoAdvanceTimeoutRef.current = null;
       }
       return;
     }
 
-    let elapsed = 0;
-
-    progressIntervalRef.current = setInterval(() => {
-      elapsed += 100;
+    let startTime = Date.now();
+    const animate = () => {
+      const elapsed = Date.now() - startTime;
       const percent = Math.min((elapsed / SLIDE_DURATION) * 100, 100);
       setProgress(percent);
 
       if (elapsed >= SLIDE_DURATION) {
-        nextSlide();
-        elapsed = 0;
-      }
-    }, 100);
-
-    return () => {
-      if (progressIntervalRef.current) {
-        clearInterval(progressIntervalRef.current);
-        progressIntervalRef.current = null;
+        setCurrent((prev) => {
+          const next = (prev + 1) % slides.length;
+          goToSlide(next);
+          return prev;
+        });
+      } else {
+        progressAnimationRef.current = requestAnimationFrame(animate);
       }
     };
-  }, [isTransitioning, isHovering, slides.length, nextSlide]);
+
+    progressAnimationRef.current = requestAnimationFrame(animate);
+
+    return () => {
+      if (progressAnimationRef.current) {
+        cancelAnimationFrame(progressAnimationRef.current);
+        progressAnimationRef.current = null;
+      }
+    };
+  }, [isTransitioning, isHovering, slides.length, goToSlide]);
+
+  // Initialize first video
+  useEffect(() => {
+    if (!hasInitialized.current && slides.length > 0 && slides[0]?.type === "video") {
+      hasInitialized.current = true;
+      const firstVideo = videoRefs.current.get(0);
+      if (firstVideo) {
+        firstVideo.play().catch(() => {
+          autoAdvanceTimeoutRef.current = setTimeout(() => {
+            setCurrent((prev) => (prev + 1) % slides.length);
+          }, 1000);
+        });
+      }
+    }
+  }, [slides.length]);
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (progressIntervalRef.current) {
-        clearInterval(progressIntervalRef.current);
+      if (progressAnimationRef.current) {
+        cancelAnimationFrame(progressAnimationRef.current);
       }
-      if (autoAdvanceRef.current) {
-        clearTimeout(autoAdvanceRef.current);
+      if (autoAdvanceTimeoutRef.current) {
+        clearTimeout(autoAdvanceTimeoutRef.current);
       }
       videoRefs.current.forEach((video) => {
         video.pause();
@@ -246,8 +365,6 @@ export function HeroSlideshow() {
     };
   }, []);
 
-  const nextSlideIndex = useMemo(() => (current + 1) % slides.length, [current, slides.length]);
-
   return (
     <section
       className="relative h-screen w-full overflow-hidden"
@@ -255,128 +372,65 @@ export function HeroSlideshow() {
       onMouseLeave={() => setIsHovering(false)}
       suppressHydrationWarning
     >
-      {/* Video slides - render only current, previous, and next */}
+      {/* Video slides - only render current and previous */}
       {slides.map((slide, index) => {
         if (slide.type !== "video") return null;
         const isActive = index === current;
         const isPrev = index === previous;
-        const shouldRender = isActive || isPrev || index === nextSlideIndex;
 
-        if (!shouldRender) return null;
-
-        const slideId = slideIds[index];
+        if (!isActive && !isPrev) return null;
 
         return (
-          <div
-            key={slideId}
-            className={cn(
-              "absolute inset-0 transition-opacity",
-              isActive
-                ? "z-20 opacity-100"
-                : isPrev
-                  ? "z-10 opacity-100"
-                  : "z-0 opacity-0 pointer-events-none",
-            )}
-            style={{
-              transitionDuration: `${TRANSITION_MS}ms`,
-              transitionTimingFunction: "ease-in-out",
-              willChange: isActive || isPrev ? "opacity" : "auto",
+          <VideoSlide
+            key={`video-${index}`}
+            slide={slide}
+            isActive={isActive}
+            isPrev={isPrev}
+            transitionMs={TRANSITION_MS}
+            videoRef={(el) => {
+              if (el) videoRefs.current.set(index, el);
             }}
-          >
-            <video
-              ref={(el) => {
-                if (el) {
-                  videoRefs.current.set(slideId, el);
-                }
-              }}
-              poster={slide.poster}
-              muted
-              playsInline
-              autoPlay={index === 0}
-              preload={index === 0 || index === nextSlideIndex ? "auto" : "metadata"}
-              loop={false}
-              onError={() => {
-                if (index === current) {
-                  setTimeout(() => nextSlide(), 1000);
-                }
-              }}
-              className="absolute inset-0 h-full w-full object-cover"
-              aria-label={`${slide.title} - ${slide.subtitle} project in ${slide.location}`}
-            >
-              <source src={slide.src} type="video/mp4" />
-            </video>
-          </div>
+          />
         );
       })}
 
-      {/* Image slides - render only current, previous, and next */}
+      {/* Image slides - only render current and previous */}
       {slides.map((slide, index) => {
         if (slide.type !== "image") return null;
         const isActive = index === current;
         const isPrev = index === previous;
-        const shouldRender = isActive || isPrev || index === nextSlideIndex;
 
-        if (!shouldRender) return null;
-
-        const slideId = slideIds[index];
+        if (!isActive && !isPrev) return null;
 
         return (
-          <div
-            key={slideId}
-            className={cn(
-              "absolute inset-0 transition-opacity",
-              isActive
-                ? "z-20 opacity-100"
-                : isPrev
-                  ? "z-10 opacity-100"
-                  : "z-0 opacity-0 pointer-events-none",
-            )}
-            style={{
-              transitionDuration: `${TRANSITION_MS}ms`,
-              transitionTimingFunction: "ease-in-out",
-              willChange: isActive || isPrev ? "opacity" : "auto",
-            }}
-          >
-            <div
-              className="absolute inset-0"
-              style={{
-                animation: isActive
-                  ? `kenBurns ${SLIDE_DURATION + TRANSITION_MS}ms ease-out forwards`
-                  : "none",
-              }}
-            >
-              <Image
-                src={slide.src}
-                alt={`${slide.title} - ${slide.subtitle} project in ${slide.location}`}
-                fill
-                className="object-cover"
-                priority={index === 0}
-                loading={index === 0 ? "eager" : "lazy"}
-                sizes="100vw"
-              />
-            </div>
-          </div>
+          <ImageSlide
+            key={`image-${index}`}
+            slide={slide}
+            isActive={isActive}
+            isPrev={isPrev}
+            transitionMs={TRANSITION_MS}
+            index={index}
+          />
         );
       })}
 
-      {/* Full overlay - deep blue-black tint for cinematic feel and masking video quality */}
+      {/* Overlay */}
       <div className="absolute inset-0 z-25 bg-[#0a0f14]/40" suppressHydrationWarning />
 
-      {/* Bottom gradient for text readability */}
+      {/* Gradient for text */}
       <div className="absolute inset-x-0 bottom-0 z-30 h-[50%] bg-gradient-to-t from-[#0a0f14]/80 via-[#0a0f14]/40 to-transparent" suppressHydrationWarning />
 
-      {/* Bottom content overlay */}
+      {/* Content overlay */}
       <div className="absolute inset-0 z-40 flex flex-col justify-end" suppressHydrationWarning>
         <div className="mx-auto w-full max-w-[1400px] px-6 pb-12 lg:px-12 lg:pb-16">
           {/* Project info */}
           <div className="mb-8 flex flex-col gap-6 lg:mb-12 lg:flex-row lg:items-end lg:justify-between">
-            {/* Left: project title */}
             <div>
               <p
-                className="mb-2 text-[11px] font-medium uppercase tracking-[0.2em] text-cream/60 transition-all duration-700"
+                className="mb-2 text-[11px] font-medium uppercase tracking-[0.2em] text-cream/60"
                 key={`subtitle-${current}`}
                 style={{
-                  animation: "fadeSlideUp 800ms cubic-bezier(0.16, 1, 0.3, 1) forwards",
+                  animation: "fadeSlideUp 600ms cubic-bezier(0.16, 1, 0.3, 1) forwards",
                 }}
               >
                 {slides[current]?.subtitle}
@@ -385,7 +439,7 @@ export function HeroSlideshow() {
                 className="font-serif text-4xl leading-[1.1] tracking-tight text-cream md:text-6xl lg:text-7xl"
                 key={`title-${current}`}
                 style={{
-                  animation: "fadeSlideUp 800ms cubic-bezier(0.16, 1, 0.3, 1) 100ms forwards",
+                  animation: "fadeSlideUp 600ms cubic-bezier(0.16, 1, 0.3, 1) 100ms forwards",
                   opacity: 0,
                   textShadow: "0 2px 20px rgba(0,0,0,0.4)",
                 }}
@@ -396,7 +450,7 @@ export function HeroSlideshow() {
                 className="mt-3 text-sm text-cream/50"
                 key={`location-${current}`}
                 style={{
-                  animation: "fadeSlideUp 800ms cubic-bezier(0.16, 1, 0.3, 1) 200ms forwards",
+                  animation: "fadeSlideUp 600ms cubic-bezier(0.16, 1, 0.3, 1) 200ms forwards",
                   opacity: 0,
                 }}
               >
@@ -404,11 +458,10 @@ export function HeroSlideshow() {
               </p>
             </div>
 
-            {/* Right: CTA */}
             <div
               key={`cta-${current}`}
               style={{
-                animation: "fadeSlideUp 800ms cubic-bezier(0.16, 1, 0.3, 1) 300ms forwards",
+                animation: "fadeSlideUp 600ms cubic-bezier(0.16, 1, 0.3, 1) 300ms forwards",
                 opacity: 0,
               }}
             >
@@ -425,38 +478,15 @@ export function HeroSlideshow() {
             </div>
           </div>
 
-          {/* Slide indicators with progress */}
-          <div className="flex items-center gap-1">
-            {slides.map((slide, index) => (
-              <button
-                key={slideIds[index]}
-                onClick={() => goToSlide(index)}
-                className="group relative flex h-8 flex-1 items-end"
-                aria-label={`Go to slide ${index + 1}: ${slide.title}`}
-              >
-                {/* Track background */}
-                <div className="h-[2px] w-full bg-cream/20 transition-all duration-300 group-hover:bg-cream/30">
-                  {/* Progress fill */}
-                  <div
-                    className="h-full bg-cream transition-all"
-                    style={{
-                      width:
-                        index === current
-                          ? `${progress}%`
-                          : index < current ||
-                              (previous !== -1 && index <= previous && current < previous)
-                            ? "100%"
-                            : "0%",
-                      transitionDuration: index === current ? "0ms" : "400ms",
-                      transitionTimingFunction: "linear",
-                    }}
-                  />
-                </div>
-              </button>
-            ))}
-          </div>
+          {/* Progress bars */}
+          <ProgressBar
+            slides={slides}
+            current={current}
+            progress={progress}
+            onSlideClick={goToSlide}
+          />
 
-          {/* Slide counter */}
+          {/* Counter */}
           <div className="mt-4 flex items-center justify-between">
             <span className="text-[11px] font-medium tabular-nums tracking-[0.1em] text-cream/50">
               {String(current + 1).padStart(2, "0")}
@@ -475,7 +505,7 @@ export function HeroSlideshow() {
         <div className="flex h-10 w-[1px] flex-col items-center">
           <div
             className="w-[1px] bg-cream/60"
-            style={{ animation: "scrollPulse 2s ease-in-out infinite" }}
+            style={{ animation: "scrollPulseOptimized 2s ease-in-out infinite" }}
           />
         </div>
       </div>

@@ -354,7 +354,7 @@ export default function HeroSlidesAdminPage() {
                           updateSlide(slide.id, { src: e.target.value })
                         }
                         className="border-neutral-300 bg-neutral-50 text-sm"
-                        placeholder="/videos/office.mp4 or /images/hero.jpg"
+                        placeholder="https://... (or upload below)"
                       />
                     </div>
                     {slide.type === "video" && (
@@ -392,7 +392,7 @@ export default function HeroSlidesAdminPage() {
                               updateSlide(slide.id, { poster: e.target.value })
                             }
                             className="border-neutral-300 bg-neutral-50 text-sm"
-                            placeholder="/images/poster-office.jpg"
+                            placeholder="https://... (image shown before video plays)"
                           />
                         </div>
                       </>

@@ -22,6 +22,28 @@ const VideoSlide = memo(function VideoSlide({
   slide: Slide;
   isActive: boolean;
 }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    if (isActive) {
+      // Reset and play when active
+      video.currentTime = 0;
+      const playPromise = video.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          console.log("[v0] Video autoplay failed, may require user interaction");
+        });
+      }
+    } else {
+      // Pause when not active
+      video.pause();
+      video.currentTime = 0;
+    }
+  }, [isActive]);
+
   return (
     <div
       className={cn(
@@ -33,9 +55,9 @@ const VideoSlide = memo(function VideoSlide({
       }}
     >
       <video
+        ref={videoRef}
         muted
         playsInline
-        autoPlay={isActive}
         preload="auto"
         loop={false}
         className="absolute inset-0 h-full w-full object-cover"

@@ -13,7 +13,7 @@ interface StoriesGridProps {
 
 export function StoriesGrid({ projects }: StoriesGridProps) {
   return (
-    <div className="mt-16">
+    <div className="mt-16" data-slot="stories-grid">
       {/* Projects grid */}
       <div className="mt-12 grid grid-cols-1 gap-10 md:grid-cols-2">
         {projects.map((project, index) => {

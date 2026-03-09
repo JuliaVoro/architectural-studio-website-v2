@@ -34,7 +34,7 @@ function mapRowToProject(row: any): Project {
   };
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   if (!supabaseServerClient) {
     return NextResponse.json(
       { error: "SUPABASE_SERVICE_ROLE_KEY is not configured" },
@@ -42,9 +42,17 @@ export async function GET() {
     );
   }
 
-  const { data, error } = await supabaseServerClient
-    .from("projects")
-    .select("*")
+  const { searchParams } = new URL(request.url);
+  const published = searchParams.get("published");
+
+  let query = supabaseServerClient.from("projects").select("*");
+
+  if (published === "true") {
+    query = query.eq("status", "published");
+  }
+
+  const { data, error } = await query
+    .order("order", { ascending: true })
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -57,7 +65,7 @@ export async function GET() {
 
   const projects = (data ?? []).map(mapRowToProject);
 
-  return NextResponse.json({ projects });
+  return NextResponse.json(projects);
 }
 
 export async function POST(request: NextRequest) {

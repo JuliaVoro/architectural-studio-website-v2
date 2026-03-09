@@ -1,59 +1,39 @@
-import type { Metadata } from "next";
-import { supabaseServerClient } from "@/lib/supabase-client";
+"use client";
+
+import { useEffect, useState } from "react";
 import type { Project } from "@/lib/projects";
 import { StoriesGrid } from "@/components/systems/systems-grid";
+import { StoriesPagination } from "@/components/systems/stories-pagination";
 
-async function getProjects(): Promise<Project[]> {
-  if (!supabaseServerClient) {
-    return [];
-  }
+const PROJECTS_PER_PAGE = 6;
 
-  const { data, error } = await supabaseServerClient
-    .from("projects")
-    .select("*")
-    .eq("status", "published")
-    .order("order", { ascending: true })
-    .order("created_at", { ascending: false });
+export default function StoriesPage() {
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(true);
 
-  if (error || !data) {
-    console.error("Error loading projects:", error);
-    return [];
-  }
+  useEffect(() => {
+    async function fetchProjects() {
+      try {
+        const response = await fetch("/api/projects?published=true");
+        if (response.ok) {
+          const data = await response.json();
+          setProjects(data);
+        }
+      } catch (error) {
+        console.error("Error loading projects:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
 
-  return data.map((row: any) => ({
-    id: row.id,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
-    status: row.status,
-    featured: row.featured,
-    private: row.private || false,
-    order: row.order || 0,
-    slug: row.slug,
-    keyFacts: {
-      title: row.title,
-      location: row.location ?? undefined,
-      year: row.year ?? undefined,
-      size: row.size ?? undefined,
-      materials: row.materials ?? undefined,
-      client: row.client ?? undefined,
-    },
-    notes: row.notes ?? undefined,
-    heroImagePath: row.hero_image_path ?? undefined,
-    introText: row.intro_text ?? undefined,
-    story: row.story ?? undefined,
-    sections: row.sections ?? undefined,
-    aiRawResponse: row.ai_raw_response ?? undefined,
-  }));
-}
+    fetchProjects();
+  }, []);
 
-export const metadata: Metadata = {
-  title: "Stories",
-  description:
-    "Selected spatial-service systems. Case studies categorized by strategic system type.",
-};
-
-export default async function StoriesPage() {
-  const projects = await getProjects();
+  const totalPages = Math.ceil(projects.length / PROJECTS_PER_PAGE);
+  const startIndex = (currentPage - 1) * PROJECTS_PER_PAGE;
+  const endIndex = startIndex + PROJECTS_PER_PAGE;
+  const currentProjects = projects.slice(startIndex, endIndex);
 
   return (
     <section className="pt-32 pb-24 lg:pb-32">
@@ -76,7 +56,16 @@ export default async function StoriesPage() {
         </div>
 
         {/* Grid */}
-        <StoriesGrid projects={projects} />
+        {!isLoading && <StoriesGrid projects={currentProjects} />}
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <StoriesPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
+        )}
       </div>
     </section>
   );

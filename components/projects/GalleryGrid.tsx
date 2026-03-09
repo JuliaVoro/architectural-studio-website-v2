@@ -38,6 +38,7 @@ export function GalleryGrid({ imagePaths }: GalleryGridProps) {
                   fill
                   sizes="(min-width: 1024px) 320px, 33vw"
                   className="object-cover"
+                  loading="eager"
                 />
               </div>
             );

@@ -70,9 +70,7 @@ export default async function StoriesPage() {
           </div>
           <div className="lg:col-span-4 lg:col-start-8">
             <p className="pt-2 text-base leading-relaxed text-muted-foreground lg:pt-16">
-              Each case is categorized by strategic system type, not sector.
-              We believe the logic of spatial-service integration transcends
-              industry boundaries.
+              Projects exploring the intersection of space, service, and everyday experience.
             </p>
           </div>
         </div>

@@ -19,6 +19,7 @@ export function FullWidthImage({ imagePath, caption }: FullWidthImageProps) {
             fill
             sizes="(min-width: 1024px) 1024px, 100vw"
             className="object-cover"
+            loading="eager"
           />
         </div>
         {caption && (

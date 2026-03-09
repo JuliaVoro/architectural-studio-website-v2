@@ -263,7 +263,7 @@ export function HeroSlideshow() {
       })}
 
       {/* Overlay */}
-      <div className="absolute inset-0 z-25 bg-[#0a0f14]/40" suppressHydrationWarning />
+      <div className="absolute inset-0 z-25 bg-[#0a0f14]/60" suppressHydrationWarning />
 
       {/* Gradient for text */}
       <div className="absolute inset-x-0 bottom-0 z-30 h-[50%] bg-gradient-to-t from-[#0a0f14]/80 via-[#0a0f14]/40 to-transparent" suppressHydrationWarning />

@@ -346,6 +346,15 @@ export default function NewProjectPage() {
               className="border-neutral-300 bg-neutral-50"
             />
           </div>
+
+          <div className="space-y-3 rounded-lg border border-neutral-200 bg-white p-5">
+            <div className="space-y-1">
+              <Label>{getFileDisplayText('images')}</Label>
+              <p className="text-xs text-neutral-500">
+                Upload multiple JPG or PNG images. Include overall views,
+                details, and context.
+              </p>
+            </div>
             
             {media.images.length > 0 && (
               <div className="space-y-2 mb-3">

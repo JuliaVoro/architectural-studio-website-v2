@@ -37,6 +37,7 @@ async function getProjectBySlug(slug: string): Promise<Project | null> {
     },
     notes: data.notes ?? undefined,
     heroImagePath: data.hero_image_path ?? undefined,
+    heroVideoPath: data.hero_video_path ?? undefined,
     introText: data.intro_text ?? undefined,
     story: data.story ?? undefined,
     sections: data.sections ?? undefined,

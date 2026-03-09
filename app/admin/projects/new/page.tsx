@@ -13,6 +13,7 @@ type MediaGroup = {
   images: File[];
   videos: File[];
   drawings: File[];
+  heroVideo: File | null;
 };
 
 type MediaFileWithId = File & { id: string };
@@ -30,6 +31,7 @@ export default function NewProjectPage() {
     images: [],
     videos: [],
     drawings: [],
+    heroVideo: null,
   });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -39,8 +41,13 @@ export default function NewProjectPage() {
     type: keyof MediaGroup,
     event: React.ChangeEvent<HTMLInputElement>,
   ) {
-    const files = Array.from(event.target.files ?? []);
-    setMedia((prev) => ({ ...prev, [type]: files }));
+    if (type === 'heroVideo') {
+      const file = event.target.files?.[0] || null;
+      setMedia((prev) => ({ ...prev, heroVideo: file }));
+    } else {
+      const files = Array.from(event.target.files ?? []);
+      setMedia((prev) => ({ ...prev, [type]: files }));
+    }
   }
 
   function addFile(type: keyof MediaGroup) {
@@ -88,6 +95,7 @@ export default function NewProjectPage() {
     imagePaths: string[];
     videoPaths: string[];
     drawingPaths: string[];
+    heroVideoPath?: string;
   }> {
     const bucket = "project-media";
     const folder = `projects/${Date.now()}`;
@@ -120,13 +128,38 @@ export default function NewProjectPage() {
       return paths;
     }
 
-    const [imagePaths, videoPaths, drawingPaths] = await Promise.all([
+    async function uploadSingleFile(
+      file: File | null,
+      kind: "hero-video",
+    ): Promise<string | undefined> {
+      if (!file) return undefined;
+
+      const safeName = file.name.replace(/[^a-z0-9_.-]/gi, "_").toLowerCase();
+      const path = `${folder}/${kind}/${Date.now()}-${safeName}`;
+
+      const { data, error } = await supabaseBrowserClient.storage
+        .from(bucket)
+        .upload(path, file, {
+          cacheControl: "3600",
+          upsert: false,
+        });
+
+      if (error) {
+        console.error("Upload error:", error);
+        throw new Error(`Failed to upload hero video: ${file.name}`);
+      }
+
+      return data.path;
+    }
+
+    const [imagePaths, videoPaths, drawingPaths, heroVideoPath] = await Promise.all([
       uploadGroup(media.images, "images"),
       uploadGroup(media.videos, "videos"),
       uploadGroup(media.drawings, "drawings"),
+      uploadSingleFile(media.heroVideo, "hero-video"),
     ]);
 
-    return { imagePaths, videoPaths, drawingPaths };
+    return { imagePaths, videoPaths, drawingPaths, heroVideoPath };
   }
 
   async function handleSubmit(event: React.FormEvent) {
@@ -136,10 +169,10 @@ export default function NewProjectPage() {
     setSuccessMessage(null);
 
     try {
-      const { imagePaths, videoPaths, drawingPaths } =
+      const { imagePaths, videoPaths, drawingPaths, heroVideoPath } =
         await uploadFilesToSupabase();
 
-      const payload: CreateProjectPayload = {
+      const payload: CreateProjectPayload & { heroVideoPath?: string } = {
         keyFacts: {
           title,
           location: location || undefined,
@@ -152,6 +185,7 @@ export default function NewProjectPage() {
         imagePaths,
         videoPaths,
         drawingPaths,
+        heroVideoPath,
       };
 
       const response = await fetch("/api/projects", {
@@ -284,12 +318,34 @@ export default function NewProjectPage() {
         <section className="space-y-4">
           <div className="space-y-3 rounded-lg border border-neutral-200 bg-white p-5">
             <div className="space-y-1">
-              <Label>{getFileDisplayText('images')}</Label>
+              <Label>Hero Video Preview</Label>
               <p className="text-xs text-neutral-500">
-                Upload multiple JPG or PNG images. Include overall views,
-                details, and context.
+                Optional: A short video to play on hover in the project preview card. This will overlay on the hero image.
               </p>
             </div>
+            
+            {media.heroVideo && (
+              <div className="flex items-center justify-between rounded border border-neutral-200 p-2 mb-3">
+                <span className="text-sm text-neutral-700 truncate flex-1">{media.heroVideo.name}</span>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setMedia(prev => ({ ...prev, heroVideo: null }))}
+                  className="text-red-600 hover:text-red-700"
+                >
+                  Remove
+                </Button>
+              </div>
+            )}
+            
+            <Input
+              type="file"
+              accept="video/*"
+              onChange={(event) => handleFileChange("heroVideo", event)}
+              className="border-neutral-300 bg-neutral-50"
+            />
+          </div>
             
             {media.images.length > 0 && (
               <div className="space-y-2 mb-3">

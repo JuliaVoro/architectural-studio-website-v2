@@ -61,6 +61,7 @@ async function getProjects(sortBy: string = 'order', sortOrder: 'asc' | 'desc' =
     },
     notes: row.notes ?? undefined,
     heroImagePath: row.hero_image_path ?? undefined,
+    heroVideoPath: row.hero_video_path ?? undefined,
     introText: row.intro_text ?? undefined,
     story: row.story ?? undefined,
     sections: row.sections ?? undefined,

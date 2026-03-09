@@ -27,6 +27,7 @@ function mapRowToProject(row: any): Project {
     },
     notes: row.notes ?? undefined,
     heroImagePath: row.hero_image_path ?? undefined,
+    heroVideoPath: row.hero_video_path ?? undefined,
     introText: row.intro_text ?? undefined,
     story: row.story ?? undefined,
     sections: (row.sections as ProjectSection[] | null) ?? undefined,
@@ -68,10 +69,10 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  let payload: CreateProjectPayload;
+  let payload: CreateProjectPayload & { heroVideoPath?: string };
 
   try {
-    payload = (await request.json()) as CreateProjectPayload;
+    payload = (await request.json()) as CreateProjectPayload & { heroVideoPath?: string };
   } catch {
     return NextResponse.json(
       { error: "Invalid JSON payload" },
@@ -111,6 +112,7 @@ export async function POST(request: NextRequest) {
         client: payload.keyFacts.client ?? null,
         notes: payload.notes ?? null,
         hero_image_path: layout.hero_image,
+        hero_video_path: payload.heroVideoPath ?? null,
         intro_text: layout.intro_text,
         story: layout.story,
         sections: layout.sections,

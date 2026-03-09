@@ -1,10 +1,9 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import type { Project } from "@/lib/projects";
 import { getProjectMediaUrl } from "@/lib/projects";
-import { cn } from "@/lib/utils";
+import { VideoPreviewCard } from "./video-preview-card";
 import { Lock } from "lucide-react";
 
 interface StoriesGridProps {
@@ -18,7 +17,13 @@ export function StoriesGrid({ projects }: StoriesGridProps) {
       <div className="mt-12 grid grid-cols-1 gap-10 md:grid-cols-2">
         {projects.map((project, index) => {
           const isPrivate = project.private;
-          
+          const imageSrc = project.heroImagePath
+            ? getProjectMediaUrl(project.heroImagePath)
+            : "/placeholder.jpg";
+          const videoSrc = project.heroVideoPath
+            ? getProjectMediaUrl(project.heroVideoPath)
+            : undefined;
+
           if (isPrivate) {
             // Private story - no navigation, show NDA icon
             return (
@@ -29,15 +34,13 @@ export function StoriesGrid({ projects }: StoriesGridProps) {
                   animationDelay: `${index * 100}ms`,
                 }}
               >
-                <div className="relative aspect-[16/10] w-full overflow-hidden bg-sand">
-                  <Image
-                    src={project.heroImagePath ? getProjectMediaUrl(project.heroImagePath) : "/placeholder.jpg"}
-                    alt={project.keyFacts.title}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 768px) 100vw, 50vw"
+                <div className="relative">
+                  <VideoPreviewCard
+                    imageSrc={imageSrc}
+                    videoSrc={videoSrc}
+                    title={project.keyFacts.title}
                   />
-                  <div className="absolute top-4 right-4 rounded-full bg-black/70 p-2">
+                  <div className="absolute top-4 right-4 rounded-full bg-black/70 p-2 z-10">
                     <Lock className="w-4 h-4 text-white" />
                   </div>
                 </div>
@@ -60,7 +63,7 @@ export function StoriesGrid({ projects }: StoriesGridProps) {
               </div>
             );
           }
-          
+
           // Public story - normal navigation
           return (
             <Link
@@ -71,13 +74,11 @@ export function StoriesGrid({ projects }: StoriesGridProps) {
                 animationDelay: `${index * 100}ms`,
               }}
             >
-              <div className="relative aspect-[16/10] w-full overflow-hidden bg-sand">
-                <Image
-                  src={project.heroImagePath ? getProjectMediaUrl(project.heroImagePath) : "/placeholder.jpg"}
-                  alt={project.keyFacts.title}
-                  fill
-                  className="object-cover transition-transform duration-700 group-hover:scale-[1.02]"
-                  sizes="(max-width: 768px) 100vw, 50vw"
+              <div className="transition-transform duration-700 group-hover:scale-[1.02]">
+                <VideoPreviewCard
+                  imageSrc={imageSrc}
+                  videoSrc={videoSrc}
+                  title={project.keyFacts.title}
                 />
               </div>
               <div className="mt-5">
@@ -98,3 +99,4 @@ export function StoriesGrid({ projects }: StoriesGridProps) {
     </div>
   );
 }
+

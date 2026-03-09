@@ -112,6 +112,7 @@ export interface Project {
   keyFacts: ProjectKeyFacts;
   notes?: string;
   heroImagePath?: string;
+  heroVideoPath?: string;
   introText?: string;
   story?: string;
   storyLabel?: string;

@@ -66,7 +66,6 @@ const VideoSlide = memo(function VideoSlide({
         preload="auto"
         loop={false}
         className="absolute inset-0 h-full w-full object-cover"
-        style={{ filter: "blur(0.5px)" }}
         poster={slide.poster}
         aria-label={`${slide.title} - ${slide.subtitle}`}
       >
@@ -107,7 +106,6 @@ const ImageSlide = memo(function ImageSlide({
           alt={`${slide.title} - ${slide.subtitle}`}
           fill
           className="object-cover"
-          style={{ filter: "blur(0.5px)" }}
           priority={index === 0}
           sizes="100vw"
         />

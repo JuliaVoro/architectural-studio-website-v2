@@ -777,9 +777,12 @@ export default function ProjectEditForm({ project }: ProjectEditFormProps) {
     introText: project.introText || "",
     story: project.story || "",
     heroImagePath: project.heroImagePath || "",
+    heroVideoPath: project.heroVideoPath || "",
     private: project.private || false,
     order: project.order || 0,
   });
+  const [uploadingHeroImage, setUploadingHeroImage] = useState(false);
+  const [uploadingHeroVideo, setUploadingHeroVideo] = useState(false);
 
   const handleHeroImageUpload = async (file: File) => {
     setUploadingHeroImage(true);
@@ -813,6 +816,39 @@ export default function ProjectEditForm({ project }: ProjectEditFormProps) {
       setUploadingHeroImage(false);
     }
   };
+
+  const handleHeroVideoUpload = async (file: File) => {
+    setUploadingHeroVideo(true);
+    
+    try {
+      if (!supabaseBrowserClient) {
+        throw new Error("Supabase client not available");
+      }
+
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}.${fileExt}`;
+      const filePath = `projects/${project.id}/hero/${fileName}`;
+
+      const { error: uploadError } = await supabaseBrowserClient.storage
+        .from('project-media')
+        .upload(filePath, file);
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      // Update form with new hero video path
+      setFormData(prev => ({
+        ...prev,
+        heroVideoPath: filePath
+      }));
+    } catch (error) {
+      console.error("Error uploading hero video:", error);
+      alert("Failed to upload hero video. Please try again.");
+    } finally {
+      setUploadingHeroVideo(false);
+    }
+  }
 
   const handleInputChange = (field: string, value: string | number | boolean) => {
     setFormData(prev => ({
@@ -949,6 +985,7 @@ export default function ProjectEditForm({ project }: ProjectEditFormProps) {
           intro_text: formData.introText || null,
           story: formData.story || null,
           hero_image_path: formData.heroImagePath || null,
+          hero_video_path: formData.heroVideoPath || null,
           sections: sections,
           private: formData.private,
           order: formData.order,
@@ -1043,48 +1080,105 @@ export default function ProjectEditForm({ project }: ProjectEditFormProps) {
         </CardContent>
       </Card>
 
-      {/* Hero Image */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Hero Image</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="relative aspect-[16/9] w-full bg-sand rounded-lg overflow-hidden">
-              {formData.heroImagePath ? (
-                <Image
-                  src={getProjectMediaUrl(formData.heroImagePath)}
-                  alt="Hero image"
-                  fill
-                  className="object-cover"
-                />
-              ) : (
-                <div className="flex items-center justify-center h-full text-muted-foreground">
-                  <ImageIcon className="w-12 h-12" />
+      {/* Hero Image and Video */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Hero Image</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="relative aspect-[16/9] w-full bg-sand rounded-lg overflow-hidden">
+                {formData.heroImagePath ? (
+                  <Image
+                    src={getProjectMediaUrl(formData.heroImagePath)}
+                    alt="Hero image"
+                    fill
+                    className="object-cover"
+                  />
+                ) : (
+                  <div className="flex items-center justify-center h-full text-muted-foreground">
+                    <ImageIcon className="w-12 h-12" />
+                  </div>
+                )}
+              </div>
+              <div className="text-sm text-muted-foreground">
+                Current hero image: {formData.heroImagePath || "No hero image set"}
+              </div>
+              <div className="space-y-3">
+                <Label>Replace Hero Image</Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handleHeroImageUpload(file);
+                    }}
+                    className="flex-1"
+                  />
+                  {uploadingHeroImage && <Loader2 className="w-4 h-4 animate-spin" />}
                 </div>
-              )}
-            </div>
-            <div className="text-sm text-muted-foreground">
-              Current hero image: {formData.heroImagePath || "No hero image set"}
-            </div>
-            <div className="space-y-3">
-              <Label>Replace Hero Image</Label>
-              <div className="flex items-center gap-2">
-                <Input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) handleHeroImageUpload(file);
-                  }}
-                  className="flex-1"
-                />
-                {uploadingHeroImage && <Loader2 className="w-4 h-4 animate-spin" />}
               </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Hero Video Preview</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="relative aspect-[16/9] w-full bg-black rounded-lg overflow-hidden">
+                {formData.heroVideoPath ? (
+                  <video
+                    src={getProjectMediaUrl(formData.heroVideoPath)}
+                    className="w-full h-full object-cover"
+                    muted
+                  />
+                ) : (
+                  <div className="flex items-center justify-center h-full text-muted-foreground">
+                    <Video className="w-12 h-12" />
+                  </div>
+                )}
+              </div>
+              <div className="text-sm text-muted-foreground">
+                Current hero video: {formData.heroVideoPath ? "Video set" : "No video set"}
+              </div>
+              <div className="space-y-3">
+                <Label>Hero Video (plays on hover)</Label>
+                <p className="text-xs text-neutral-500">
+                  Optional: A short video that plays when users hover over the project card
+                </p>
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="file"
+                    accept="video/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handleHeroVideoUpload(file);
+                    }}
+                    className="flex-1"
+                  />
+                  {uploadingHeroVideo && <Loader2 className="w-4 h-4 animate-spin" />}
+                </div>
+                {formData.heroVideoPath && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setFormData(prev => ({ ...prev, heroVideoPath: "" }))}
+                    className="w-full text-red-600 hover:text-red-700"
+                  >
+                    Remove Video
+                  </Button>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Content with AI Assistance */}
       <Card>

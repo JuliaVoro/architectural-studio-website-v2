@@ -32,20 +32,21 @@ export function HeroSlideshow() {
   const [progress, setProgress] = useState(0);
   const [isHovering, setIsHovering] = useState(false);
   
-  const videoRefs = useRef<Map<number, HTMLVideoElement>>(new Map());
+  const videoRefs = useRef<Map<string, HTMLVideoElement>>(new Map());
   const hasInitialized = useRef(false);
-  const stateRef = useRef({ current, isTransitioning, slides });
-  
-  // Keep state ref in sync
-  useEffect(() => {
-    stateRef.current = { current, isTransitioning, slides };
-  }, [current, isTransitioning, slides]);
+  const autoAdvanceRef = useRef<NodeJS.Timeout | null>(null);
+  const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const SLIDE_DURATION = 3000;
   const TRANSITION_MS = 1000;
 
+  // Create unique IDs for slides to maintain references across reorders
+  const slideIds = useMemo(() => slides.map((_, i) => `slide-${i}`), [slides.length]);
+
   // Load dynamic slides from API (if configured)
   useEffect(() => {
+    let isMounted = true;
+
     async function loadSlides() {
       try {
         const res = await fetch("/api/hero-slides", { cache: "no-store" });
@@ -63,7 +64,7 @@ export function HeroSlideshow() {
           }>;
         };
         const active = data.slides.filter((s) => !s.hidden);
-        if (!active.length) return;
+        if (!active.length || !isMounted) return;
         const mapped: Slide[] = active.map((s) => ({
           type: s.type,
           src: s.src,
@@ -74,19 +75,53 @@ export function HeroSlideshow() {
         }));
         setSlides(mapped);
         setCurrent(0);
+        hasInitialized.current = false;
       } catch {
         // Ignore and keep defaults
       }
     }
 
     loadSlides();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
-  // Pause non-active videos - run when current/previous change
+  // Clean up old video refs when slides change
+  useEffect(() => {
+    // Clear refs that are no longer valid
+    const validIds = new Set(slideIds);
+    const entriesToDelete: string[] = [];
+    
+    videoRefs.current.forEach((_, key) => {
+      if (!validIds.has(key)) {
+        entriesToDelete.push(key);
+      }
+    });
+
+    entriesToDelete.forEach((key) => {
+      const video = videoRefs.current.get(key);
+      if (video) {
+        video.pause();
+        video.currentTime = 0;
+      }
+      videoRefs.current.delete(key);
+    });
+
+    // Reset if current index is out of bounds
+    if (current >= slides.length) {
+      setCurrent(0);
+      setPrevious(-1);
+    }
+  }, [slides.length, slideIds]);
+
+  // Pause non-active videos
   useEffect(() => {
     slides.forEach((slide, index) => {
       if (slide.type === "video") {
-        const video = videoRefs.current.get(index);
+        const id = slideIds[index];
+        const video = videoRefs.current.get(id);
         if (video && index !== current && index !== previous) {
           if (!video.paused) {
             video.pause();
@@ -95,103 +130,122 @@ export function HeroSlideshow() {
         }
       }
     });
-  }, [current, previous, slides.length]);
-
-  // Transition handler
-  const handleTransitionComplete = useCallback(() => {
-    setIsTransitioning(false);
-    setPrevious(-1);
-  }, []);
+  }, [current, previous, slides.length, slideIds]);
 
   // Go to specific slide
-  const goToSlide = useCallback((index: number) => {
-    const { current: currentSlide, isTransitioning: isInTransition } = stateRef.current;
-    
-    if (isInTransition || index === currentSlide) return;
-    
-    setIsTransitioning(true);
-    setPrevious(currentSlide);
-    setCurrent(index);
-    setProgress(0);
-
-    // Play new video
-    const newVideo = videoRefs.current.get(index);
-    if (newVideo) {
-      newVideo.currentTime = 0;
-      newVideo.play().catch(() => {});
-    }
-
-    // Complete transition after duration
-    const timer = setTimeout(() => {
-      const oldVideo = videoRefs.current.get(currentSlide);
-      if (oldVideo) {
-        oldVideo.pause();
-        oldVideo.currentTime = 0;
+  const goToSlide = useCallback(
+    (index: number) => {
+      if (isTransitioning || index === current || index < 0 || index >= slides.length) {
+        return;
       }
-      handleTransitionComplete();
-    }, TRANSITION_MS);
 
-    return () => clearTimeout(timer);
-  }, [handleTransitionComplete]);
+      setIsTransitioning(true);
+      setPrevious(current);
+      setCurrent(index);
+      setProgress(0);
+
+      // Play new video
+      const newVideoId = slideIds[index];
+      const newVideo = videoRefs.current.get(newVideoId);
+      if (newVideo) {
+        newVideo.currentTime = 0;
+        newVideo.play().catch(() => {});
+      }
+
+      // Complete transition after duration
+      const timer = setTimeout(() => {
+        const oldVideoId = slideIds[current];
+        const oldVideo = videoRefs.current.get(oldVideoId);
+        if (oldVideo) {
+          oldVideo.pause();
+          oldVideo.currentTime = 0;
+        }
+        setIsTransitioning(false);
+        setPrevious(-1);
+      }, TRANSITION_MS);
+
+      return () => clearTimeout(timer);
+    },
+    [current, isTransitioning, slides.length, slideIds],
+  );
 
   // Auto-advance to next slide
   const nextSlide = useCallback(() => {
-    const { current: currentSlide, slides: allSlides } = stateRef.current;
-    const next = (currentSlide + 1) % allSlides.length;
-    goToSlide(next);
-  }, [goToSlide]);
+    setCurrent((prev) => {
+      const next = (prev + 1) % slides.length;
+      goToSlide(next);
+      return prev;
+    });
+  }, [slides.length, goToSlide]);
 
   // Initialize first video
   useEffect(() => {
     if (!hasInitialized.current && slides.length > 0) {
       hasInitialized.current = true;
-      
+
       if (slides[0]?.type === "video") {
-        const firstVideo = videoRefs.current.get(0);
+        const firstVideoId = slideIds[0];
+        const firstVideo = videoRefs.current.get(firstVideoId);
         if (firstVideo) {
           const playPromise = firstVideo.play();
           if (playPromise !== undefined) {
             playPromise.catch(() => {
-              // Fallback to next slide if video fails
               setTimeout(() => nextSlide(), 1000);
             });
           }
         }
       }
     }
-  }, [slides, nextSlide]);
+  }, [slides.length, slideIds, nextSlide]);
 
-  // Main auto-advance loop - only depends on pause state
+  // Main auto-advance loop
   useEffect(() => {
-    if (isTransitioning || isHovering) return;
+    if (isTransitioning || isHovering || slides.length === 0) {
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+        progressIntervalRef.current = null;
+      }
+      return;
+    }
 
-    let progressInterval: NodeJS.Timeout;
-    let advanceTimeout: NodeJS.Timeout;
+    let elapsed = 0;
 
-    const startAutoAdvance = () => {
-      let elapsed = 0;
-      
-      progressInterval = setInterval(() => {
-        elapsed += 100;
-        const percent = Math.min((elapsed / SLIDE_DURATION) * 100, 100);
-        setProgress(percent);
+    progressIntervalRef.current = setInterval(() => {
+      elapsed += 100;
+      const percent = Math.min((elapsed / SLIDE_DURATION) * 100, 100);
+      setProgress(percent);
 
-        if (elapsed >= SLIDE_DURATION) {
-          nextSlide();
-          elapsed = 0;
-        }
-      }, 100);
-    };
-
-    startAutoAdvance();
+      if (elapsed >= SLIDE_DURATION) {
+        nextSlide();
+        elapsed = 0;
+      }
+    }, 100);
 
     return () => {
-      clearInterval(progressInterval);
-      clearTimeout(advanceTimeout);
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+        progressIntervalRef.current = null;
+      }
     };
-  }, [isTransitioning, isHovering, nextSlide]);
+  }, [isTransitioning, isHovering, slides.length, nextSlide]);
 
-  // Preload next slide
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+      }
+      if (autoAdvanceRef.current) {
+        clearTimeout(autoAdvanceRef.current);
+      }
+      videoRefs.current.forEach((video) => {
+        video.pause();
+        video.currentTime = 0;
+      });
+      videoRefs.current.clear();
+    };
+  }, []);
+
   const nextSlideIndex = useMemo(() => (current + 1) % slides.length, [current, slides.length]);
 
   return (
@@ -207,12 +261,14 @@ export function HeroSlideshow() {
         const isActive = index === current;
         const isPrev = index === previous;
         const shouldRender = isActive || isPrev || index === nextSlideIndex;
-        
+
         if (!shouldRender) return null;
-        
+
+        const slideId = slideIds[index];
+
         return (
           <div
-            key={`video-${index}`}
+            key={slideId}
             className={cn(
               "absolute inset-0 transition-opacity",
               isActive
@@ -229,7 +285,9 @@ export function HeroSlideshow() {
           >
             <video
               ref={(el) => {
-                if (el) videoRefs.current.set(index, el);
+                if (el) {
+                  videoRefs.current.set(slideId, el);
+                }
               }}
               poster={slide.poster}
               muted
@@ -260,9 +318,11 @@ export function HeroSlideshow() {
 
         if (!shouldRender) return null;
 
+        const slideId = slideIds[index];
+
         return (
           <div
-            key={`image-${index}`}
+            key={slideId}
             className={cn(
               "absolute inset-0 transition-opacity",
               isActive
@@ -369,7 +429,7 @@ export function HeroSlideshow() {
           <div className="flex items-center gap-1">
             {slides.map((slide, index) => (
               <button
-                key={index}
+                key={slideIds[index]}
                 onClick={() => goToSlide(index)}
                 className="group relative flex h-8 flex-1 items-end"
                 aria-label={`Go to slide ${index + 1}: ${slide.title}`}

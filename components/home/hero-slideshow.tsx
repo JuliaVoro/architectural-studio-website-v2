@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -31,11 +31,9 @@ export function HeroSlideshow() {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [progress, setProgress] = useState(0);
   const [isHovering, setIsHovering] = useState(false);
-  const [videoReady, setVideoReady] = useState<Set<number>>(new Set());
-  const [videoDurations, setVideoDurations] = useState<Map<number, number>>(new Map());
-  const [isBuffering, setIsBuffering] = useState(false);
   const videoRefs = useRef<Map<number, HTMLVideoElement>>(new Map());
   const hasInitialized = useRef(false);
+  const nextSlideRef = useRef<() => void>(() => {});
 
   // Load dynamic slides from API (if configured)
   useEffect(() => {
@@ -75,54 +73,10 @@ export function HeroSlideshow() {
     loadSlides();
   }, []);
 
-  const SLIDE_DURATION = 3000; // 3 seconds for all slides
+  const SLIDE_DURATION = 3000;
   const TRANSITION_MS = 1000;
 
-  // Force advance from first slide after specific time
-  useEffect(() => {
-    if (current === 0) {
-      const forceAdvanceTimer = setTimeout(() => {
-        nextSlide();
-      }, SLIDE_DURATION);
-      return () => clearTimeout(forceAdvanceTimer);
-    }
-  }, [current]);
-
-  // Initialize first video and ensure slideshow starts
-  useEffect(() => {
-    if (!hasInitialized.current && slides[0]?.type === "video") {
-      hasInitialized.current = true;
-      const firstVideo = videoRefs.current.get(0);
-      if (firstVideo) {
-        // Force play first video
-        const playPromise = firstVideo.play();
-        if (playPromise !== undefined) {
-          playPromise.catch(() => {
-            // If autoplay fails, move to next slide after delay
-            setTimeout(() => {
-              if (current === 0) nextSlide();
-            }, 3000);
-          });
-        }
-      }
-    }
-  }, [current]);
-
-  // Pause non-active videos to improve performance
-  useEffect(() => {
-    slides.forEach((slide, index) => {
-      if (slide.type === "video") {
-        const video = videoRefs.current.get(index);
-        if (video) {
-          if (index !== current && index !== previous) {
-            video.pause();
-            video.currentTime = 0;
-          }
-        }
-      }
-    });
-  }, [current, previous]);
-
+  // Memoize slide transition logic
   const goToSlide = useCallback(
     (index: number) => {
       if (isTransitioning || index === current) return;
@@ -132,14 +86,12 @@ export function HeroSlideshow() {
       setCurrent(index);
       setProgress(0);
 
-      // Start playing the new video immediately
       const newVideo = videoRefs.current.get(index);
       if (newVideo) {
         newVideo.currentTime = 0;
         newVideo.play().catch(() => {});
       }
 
-      // After transition completes, pause the old video and clean up
       setTimeout(() => {
         const oldVideo = videoRefs.current.get(prevIndex);
         if (oldVideo) {
@@ -150,45 +102,93 @@ export function HeroSlideshow() {
         setPrevious(-1);
       }, TRANSITION_MS);
     },
-    [current, isTransitioning]
+    [current, isTransitioning],
   );
 
   const nextSlide = useCallback(() => {
     const next = (current + 1) % slides.length;
     goToSlide(next);
-  }, [current, goToSlide]);
+  }, [current, slides.length, goToSlide]);
 
-  // Auto-advance timer with fallback for stuck videos
-  const nextSlideRef = useRef(nextSlide);
-  nextSlideRef.current = nextSlide;
+  // Update ref for use in intervals
+  useEffect(() => {
+    nextSlideRef.current = nextSlide;
+  }, [nextSlide]);
 
+  // Force advance from first slide
+  useEffect(() => {
+    if (current === 0) {
+      const forceAdvanceTimer = setTimeout(() => {
+        nextSlideRef.current();
+      }, SLIDE_DURATION);
+      return () => clearTimeout(forceAdvanceTimer);
+    }
+  }, [current]);
+
+  // Initialize first video
+  useEffect(() => {
+    if (!hasInitialized.current && slides[0]?.type === "video") {
+      hasInitialized.current = true;
+      const firstVideo = videoRefs.current.get(0);
+      if (firstVideo) {
+        const playPromise = firstVideo.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(() => {
+            setTimeout(() => {
+              if (current === 0) nextSlideRef.current();
+            }, 3000);
+          });
+        }
+      }
+    }
+  }, [current, slides]);
+
+  // Pause non-active videos - memoized to avoid frequent calls
+  useEffect(() => {
+    slides.forEach((slide, index) => {
+      if (slide.type === "video") {
+        const video = videoRefs.current.get(index);
+        if (video) {
+          if (index !== current && index !== previous) {
+            if (!video.paused) {
+              video.pause();
+              video.currentTime = 0;
+            }
+          }
+        }
+      }
+    });
+  }, [current, previous, slides]);
+
+  // Optimized auto-advance timer with less frequent updates
   useEffect(() => {
     if (isTransitioning || isHovering) return;
 
     const interval = setInterval(() => {
       setProgress((prev) => {
-        if (prev >= 100) {
+        const next = prev + 100 / (SLIDE_DURATION / 100); // Update every 100ms instead of 50ms
+        if (next >= 100) {
           nextSlideRef.current();
           return 0;
         }
-        return prev + 100 / (SLIDE_DURATION / 50);
+        return next;
       });
-    }, 50);
+    }, 100);
 
-    // Fallback: if we're stuck on first slide for too long, force advance
     const fallbackTimer = setTimeout(() => {
-      if (current === 0 && !videoReady.has(0)) {
+      if (current === 0) {
         nextSlideRef.current();
       }
-    }, SLIDE_DURATION * 2); // Wait 2x duration before fallback
+    }, SLIDE_DURATION * 2);
 
     return () => {
       clearInterval(interval);
       clearTimeout(fallbackTimer);
     };
-  }, [isTransitioning, isHovering, current, videoReady]);
+  }, [isTransitioning, isHovering, current]);
 
-  
+  // Preload next slide
+  const nextSlideIndex = useMemo(() => (current + 1) % slides.length, [current, slides.length]);
 
   return (
     <section
@@ -197,11 +197,14 @@ export function HeroSlideshow() {
       onMouseLeave={() => setIsHovering(false)}
       suppressHydrationWarning
     >
-      {/* Video slides - always rendered to prevent hydration mismatch */}
+      {/* Video slides - render only current, previous, and next */}
       {slides.map((slide, index) => {
         if (slide.type !== "video") return null;
         const isActive = index === current;
         const isPrev = index === previous;
+        const shouldRender = isActive || isPrev || index === nextSlideIndex;
+        
+        if (!shouldRender) return null;
         
         return (
           <div
@@ -212,7 +215,7 @@ export function HeroSlideshow() {
                 ? "z-20 opacity-100"
                 : isPrev
                   ? "z-10 opacity-100"
-                  : "z-0 opacity-0 pointer-events-none"
+                  : "z-0 opacity-0 pointer-events-none",
             )}
             style={{
               transitionDuration: `${TRANSITION_MS}ms`,
@@ -228,23 +231,15 @@ export function HeroSlideshow() {
               muted
               playsInline
               autoPlay={index === 0}
-              preload={index === 0 || index === (current + 1) % slides.length ? "auto" : "metadata"}
+              preload={index === 0 || index === nextSlideIndex ? "auto" : "metadata"}
               loop={false}
               onError={() => {
                 if (index === 0) {
-                  // Force next slide if first video fails
-                  setTimeout(() => nextSlide(), 1000);
+                  setTimeout(() => nextSlideRef.current(), 1000);
                 }
               }}
               onCanPlay={() => {
-                setVideoReady((prev) => new Set(prev).add(index));
-                if (isActive) setIsBuffering(false);
-              }}
-              onLoadedMetadata={(e) => {
-                const video = e.currentTarget;
-                if (video.duration && isFinite(video.duration)) {
-                  setVideoDurations((prev) => new Map(prev).set(index, video.duration));
-                }
+                if (isActive) setIsTransitioning(false);
               }}
               className="absolute inset-0 h-full w-full object-cover"
               aria-label={`${slide.title} - ${slide.subtitle} project in ${slide.location}`}
@@ -255,11 +250,14 @@ export function HeroSlideshow() {
         );
       })}
 
-      {/* Image slides - always rendered to prevent hydration mismatch */}
+      {/* Image slides - render only current, previous, and next */}
       {slides.map((slide, index) => {
         if (slide.type !== "image") return null;
         const isActive = index === current;
         const isPrev = index === previous;
+        const shouldRender = isActive || isPrev || index === nextSlideIndex;
+
+        if (!shouldRender) return null;
 
         return (
           <div
@@ -270,7 +268,7 @@ export function HeroSlideshow() {
                 ? "z-20 opacity-100"
                 : isPrev
                   ? "z-10 opacity-100"
-                  : "z-0 opacity-0 pointer-events-none"
+                  : "z-0 opacity-0 pointer-events-none",
             )}
             style={{
               transitionDuration: `${TRANSITION_MS}ms`,
@@ -299,8 +297,6 @@ export function HeroSlideshow() {
           </div>
         );
       })}
-
-      
 
       {/* Full overlay - deep blue-black tint for cinematic feel and masking video quality */}
       <div className="absolute inset-0 z-25 bg-[#0a0f14]/40" suppressHydrationWarning />
@@ -357,8 +353,8 @@ export function HeroSlideshow() {
             >
               <button
                 onClick={() => {
-                  const projectsSection = document.getElementById('projects');
-                  projectsSection?.scrollIntoView({ behavior: 'smooth' });
+                  const projectsSection = document.getElementById("projects");
+                  projectsSection?.scrollIntoView({ behavior: "smooth" });
                 }}
                 className="group inline-flex items-center gap-3 text-[11px] font-medium uppercase tracking-[0.2em] text-cream/80 transition-colors duration-300 hover:text-cream"
               >
@@ -390,7 +386,7 @@ export function HeroSlideshow() {
                               (previous !== -1 && index <= previous && current < previous)
                             ? "100%"
                             : "0%",
-                      transitionDuration: index === current ? "50ms" : "400ms",
+                      transitionDuration: index === current ? "100ms" : "400ms",
                       transitionTimingFunction: "linear",
                     }}
                   />

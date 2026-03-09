@@ -49,7 +49,7 @@ const VideoSlide = memo(function VideoSlide({
         poster={slide.poster}
         muted
         playsInline
-        preload={isActive || isPrev ? "auto" : "metadata"}
+        preload="auto"
         loop={false}
         className="absolute inset-0 h-full w-full object-cover"
         aria-label={`${slide.title} - ${slide.subtitle} project in ${slide.location}`}
@@ -415,13 +415,14 @@ export function HeroSlideshow() {
         <div className="absolute inset-0 z-50 bg-neutral-900" />
       ) : (
         <>
-          {/* Video slides - only render current and previous */}
+          {/* Video slides - render current, previous, and next to prevent gaps */}
           {slides.map((slide, index) => {
             if (slide.type !== "video") return null;
             const isActive = index === current;
             const isPrev = index === previous;
+            const isNext = index === (current + 1) % slides.length;
 
-            if (!isActive && !isPrev) return null;
+            if (!isActive && !isPrev && !isNext) return null;
 
             return (
               <VideoSlide
@@ -437,13 +438,14 @@ export function HeroSlideshow() {
             );
           })}
 
-          {/* Image slides - only render current and previous */}
+          {/* Image slides - render current, previous, and next to prevent gaps */}
           {slides.map((slide, index) => {
             if (slide.type !== "image") return null;
             const isActive = index === current;
             const isPrev = index === previous;
+            const isNext = index === (current + 1) % slides.length;
 
-            if (!isActive && !isPrev) return null;
+            if (!isActive && !isPrev && !isNext) return null;
 
             return (
               <ImageSlide

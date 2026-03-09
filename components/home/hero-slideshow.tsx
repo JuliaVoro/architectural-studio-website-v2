@@ -410,8 +410,8 @@ export function HeroSlideshow() {
       onMouseLeave={() => setIsHovering(false)}
       suppressHydrationWarning
     >
-      {/* Show nothing while loading to prevent flicker */}
-      {isLoading || slides.length === 0 ? (
+      {slides.length === 0 ? (
+        // Only show loading overlay if no slides at all
         <div className="absolute inset-0 z-50 bg-neutral-900" />
       ) : (
         <>

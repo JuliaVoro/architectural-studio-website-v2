@@ -38,7 +38,7 @@ export function SelectedStories() {
         .eq("status", "published")
         .order("order", { ascending: true })
         .order("created_at", { ascending: false })
-        .limit(4);
+        .limit(6);
 
       if (error) {
         console.error("Error loading projects:", error);
@@ -89,7 +89,7 @@ export function SelectedStories() {
               Selected Stories
             </p>
             <h2 className="mt-6 font-serif text-3xl leading-[1.2] tracking-tight text-foreground md:text-4xl text-balance">
-              Recent Work
+              Projects
             </h2>
           </div>
           <Link
@@ -100,10 +100,10 @@ export function SelectedStories() {
           </Link>
         </div>
 
-        <div className="mt-16 grid grid-cols-1 gap-8 md:grid-cols-2">
+        <div className="mt-16 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
           {loading ? (
             // Loading skeleton
-            Array.from({ length: 4 }).map((_, index) => (
+            Array.from({ length: 6 }).map((_, index) => (
               <div
                 key={`skeleton-${index}`}
                 className="group"

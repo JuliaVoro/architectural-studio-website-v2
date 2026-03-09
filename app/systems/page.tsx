@@ -65,7 +65,7 @@ export default async function StoriesPage() {
               Stories
             </p>
             <h1 className="mt-6 font-serif text-4xl leading-[1.1] tracking-tight text-foreground md:text-5xl lg:text-6xl text-balance">
-              Selected Stories
+              Selected Projects
             </h1>
           </div>
           <div className="lg:col-span-4 lg:col-start-8">

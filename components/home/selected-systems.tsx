@@ -86,7 +86,7 @@ export function SelectedStories() {
         <div className="flex items-end justify-between">
           <div>
             <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
-              Selected Stories
+              Selected Projects
             </p>
             <h2 className="mt-6 font-serif text-3xl leading-[1.2] tracking-tight text-foreground md:text-4xl text-balance">
               Projects

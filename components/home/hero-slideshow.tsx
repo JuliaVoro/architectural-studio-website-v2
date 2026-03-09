@@ -29,7 +29,6 @@ export function HeroSlideshow() {
   const [current, setCurrent] = useState(0);
   const [previous, setPrevious] = useState(-1);
   const [isTransitioning, setIsTransitioning] = useState(false);
-  const [progress, setProgress] = useState(0);
   const [isHovering, setIsHovering] = useState(false);
   
   const videoRefs = useRef<Map<string, HTMLVideoElement>>(new Map());
@@ -142,7 +141,6 @@ export function HeroSlideshow() {
       setIsTransitioning(true);
       setPrevious(current);
       setCurrent(index);
-      setProgress(0);
 
       // Play new video
       const newVideoId = slideIds[index];
@@ -201,40 +199,19 @@ export function HeroSlideshow() {
   // Main auto-advance loop
   useEffect(() => {
     if (isTransitioning || isHovering || slides.length === 0) {
-      if (progressIntervalRef.current) {
-        clearInterval(progressIntervalRef.current);
-        progressIntervalRef.current = null;
-      }
       return;
     }
 
-    let elapsed = 0;
+    const autoAdvanceTimer = setTimeout(() => {
+      nextSlide();
+    }, SLIDE_DURATION);
 
-    progressIntervalRef.current = setInterval(() => {
-      elapsed += 100;
-      const percent = Math.min((elapsed / SLIDE_DURATION) * 100, 100);
-      setProgress(percent);
-
-      if (elapsed >= SLIDE_DURATION) {
-        nextSlide();
-        elapsed = 0;
-      }
-    }, 100);
-
-    return () => {
-      if (progressIntervalRef.current) {
-        clearInterval(progressIntervalRef.current);
-        progressIntervalRef.current = null;
-      }
-    };
+    return () => clearTimeout(autoAdvanceTimer);
   }, [isTransitioning, isHovering, slides.length, nextSlide]);
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (progressIntervalRef.current) {
-        clearInterval(progressIntervalRef.current);
-      }
       if (autoAdvanceRef.current) {
         clearTimeout(autoAdvanceRef.current);
       }
@@ -425,7 +402,7 @@ export function HeroSlideshow() {
             </div>
           </div>
 
-          {/* Slide indicators with progress */}
+          {/* Slide indicators */}
           <div className="flex items-center gap-1">
             {slides.map((slide, index) => (
               <button
@@ -435,23 +412,7 @@ export function HeroSlideshow() {
                 aria-label={`Go to slide ${index + 1}: ${slide.title}`}
               >
                 {/* Track background */}
-                <div className="h-[2px] w-full bg-cream/20 transition-all duration-300 group-hover:bg-cream/30">
-                  {/* Progress fill */}
-                  <div
-                    className="h-full bg-cream transition-all"
-                    style={{
-                      width:
-                        index === current
-                          ? `${progress}%`
-                          : index < current ||
-                              (previous !== -1 && index <= previous && current < previous)
-                            ? "100%"
-                            : "0%",
-                      transitionDuration: index === current ? "0ms" : "400ms",
-                      transitionTimingFunction: "linear",
-                    }}
-                  />
-                </div>
+                <div className="h-[2px] w-full bg-cream/20 transition-all duration-300 group-hover:bg-cream/30" />
               </button>
             ))}
           </div>

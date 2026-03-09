@@ -848,7 +848,7 @@ export default function ProjectEditForm({ project }: ProjectEditFormProps) {
     } finally {
       setUploadingHeroVideo(false);
     }
-  }
+  };
 
   const handleInputChange = (field: string, value: string | number | boolean) => {
     setFormData(prev => ({

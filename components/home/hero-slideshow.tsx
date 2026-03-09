@@ -153,16 +153,8 @@ const ProgressBar = memo(function ProgressBar({
 });
 
 export function HeroSlideshow() {
-  const [slides, setSlides] = useState<Slide[]>(
-    defaultHeroSlides.map((s) => ({
-      type: s.type,
-      src: s.src,
-      poster: s.poster ?? undefined,
-      title: s.title,
-      subtitle: s.label,
-      location: s.subtitle,
-    })),
-  );
+  const [slides, setSlides] = useState<Slide[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [current, setCurrent] = useState(0);
   const [previous, setPrevious] = useState(-1);
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -183,8 +175,23 @@ export function HeroSlideshow() {
 
     async function loadSlides() {
       try {
+        setIsLoading(true);
         const res = await fetch("/api/hero-slides", { cache: "no-store" });
-        if (!res.ok) return;
+        if (!res.ok) {
+          // Fallback to defaults if API fails
+          const mapped: Slide[] = defaultHeroSlides.map((s) => ({
+            type: s.type,
+            src: s.src,
+            poster: s.poster ?? undefined,
+            title: s.title,
+            subtitle: s.label,
+            location: s.subtitle,
+          }));
+          if (isMounted) {
+            setSlides(mapped);
+          }
+          return;
+        }
         const data = (await res.json()) as {
           slides: Array<{
             id: string;
@@ -198,7 +205,21 @@ export function HeroSlideshow() {
           }>;
         };
         const active = data.slides.filter((s) => !s.hidden);
-        if (!active.length || !isMounted) return;
+        if (!active.length) {
+          // Fallback to defaults if no active slides
+          const mapped: Slide[] = defaultHeroSlides.map((s) => ({
+            type: s.type,
+            src: s.src,
+            poster: s.poster ?? undefined,
+            title: s.title,
+            subtitle: s.label,
+            location: s.subtitle,
+          }));
+          if (isMounted) {
+            setSlides(mapped);
+          }
+          return;
+        }
         const mapped: Slide[] = active.map((s) => ({
           type: s.type,
           src: s.src,
@@ -207,11 +228,28 @@ export function HeroSlideshow() {
           subtitle: s.label,
           location: s.subtitle,
         }));
-        setSlides(mapped);
-        setCurrent(0);
-        hasInitialized.current = false;
+        if (isMounted) {
+          setSlides(mapped);
+          setCurrent(0);
+          hasInitialized.current = false;
+        }
       } catch {
-        // Keep defaults
+        // Fallback to defaults on error
+        const mapped: Slide[] = defaultHeroSlides.map((s) => ({
+          type: s.type,
+          src: s.src,
+          poster: s.poster ?? undefined,
+          title: s.title,
+          subtitle: s.label,
+          location: s.subtitle,
+        }));
+        if (isMounted) {
+          setSlides(mapped);
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
     }
 
@@ -372,143 +410,150 @@ export function HeroSlideshow() {
       onMouseLeave={() => setIsHovering(false)}
       suppressHydrationWarning
     >
-      {/* Video slides - only render current and previous */}
-      {slides.map((slide, index) => {
-        if (slide.type !== "video") return null;
-        const isActive = index === current;
-        const isPrev = index === previous;
+      {/* Show nothing while loading to prevent flicker */}
+      {isLoading || slides.length === 0 ? (
+        <div className="absolute inset-0 z-50 bg-neutral-900" />
+      ) : (
+        <>
+          {/* Video slides - only render current and previous */}
+          {slides.map((slide, index) => {
+            if (slide.type !== "video") return null;
+            const isActive = index === current;
+            const isPrev = index === previous;
 
-        if (!isActive && !isPrev) return null;
+            if (!isActive && !isPrev) return null;
 
-        return (
-          <VideoSlide
-            key={`video-${index}`}
-            slide={slide}
-            isActive={isActive}
-            isPrev={isPrev}
-            transitionMs={TRANSITION_MS}
-            videoRef={(el) => {
-              if (el) videoRefs.current.set(index, el);
-            }}
-          />
-        );
-      })}
-
-      {/* Image slides - only render current and previous */}
-      {slides.map((slide, index) => {
-        if (slide.type !== "image") return null;
-        const isActive = index === current;
-        const isPrev = index === previous;
-
-        if (!isActive && !isPrev) return null;
-
-        return (
-          <ImageSlide
-            key={`image-${index}`}
-            slide={slide}
-            isActive={isActive}
-            isPrev={isPrev}
-            transitionMs={TRANSITION_MS}
-            index={index}
-          />
-        );
-      })}
-
-      {/* Overlay */}
-      <div className="absolute inset-0 z-25 bg-[#0a0f14]/40" suppressHydrationWarning />
-
-      {/* Gradient for text */}
-      <div className="absolute inset-x-0 bottom-0 z-30 h-[50%] bg-gradient-to-t from-[#0a0f14]/80 via-[#0a0f14]/40 to-transparent" suppressHydrationWarning />
-
-      {/* Content overlay */}
-      <div className="absolute inset-0 z-40 flex flex-col justify-end" suppressHydrationWarning>
-        <div className="mx-auto w-full max-w-[1400px] px-6 pb-12 lg:px-12 lg:pb-16">
-          {/* Project info */}
-          <div className="mb-8 flex flex-col gap-6 lg:mb-12 lg:flex-row lg:items-end lg:justify-between">
-            <div>
-              <p
-                className="mb-2 text-[11px] font-medium uppercase tracking-[0.2em] text-cream/60"
-                key={`subtitle-${current}`}
-                style={{
-                  animation: "fadeSlideUp 600ms cubic-bezier(0.16, 1, 0.3, 1) forwards",
+            return (
+              <VideoSlide
+                key={`video-${index}`}
+                slide={slide}
+                isActive={isActive}
+                isPrev={isPrev}
+                transitionMs={TRANSITION_MS}
+                videoRef={(el) => {
+                  if (el) videoRefs.current.set(index, el);
                 }}
-              >
-                {slides[current]?.subtitle}
-              </p>
-              <h2
-                className="font-serif text-4xl leading-[1.1] tracking-tight text-cream md:text-6xl lg:text-7xl"
-                key={`title-${current}`}
-                style={{
-                  animation: "fadeSlideUp 600ms cubic-bezier(0.16, 1, 0.3, 1) 100ms forwards",
-                  opacity: 0,
-                  textShadow: "0 2px 20px rgba(0,0,0,0.4)",
-                }}
-              >
-                {slides[current]?.title}
-              </h2>
-              <p
-                className="mt-3 text-sm text-cream/50"
-                key={`location-${current}`}
-                style={{
-                  animation: "fadeSlideUp 600ms cubic-bezier(0.16, 1, 0.3, 1) 200ms forwards",
-                  opacity: 0,
-                }}
-              >
-                {slides[current]?.location}
-              </p>
-            </div>
+              />
+            );
+          })}
 
-            <div
-              key={`cta-${current}`}
-              style={{
-                animation: "fadeSlideUp 600ms cubic-bezier(0.16, 1, 0.3, 1) 300ms forwards",
-                opacity: 0,
-              }}
-            >
-              <button
-                onClick={() => {
-                  const projectsSection = document.getElementById("projects");
-                  projectsSection?.scrollIntoView({ behavior: "smooth" });
-                }}
-                className="group inline-flex items-center gap-3 text-[11px] font-medium uppercase tracking-[0.2em] text-cream/80 transition-colors duration-300 hover:text-cream"
-              >
-                {"View Projects"}
-                <span className="inline-block h-px w-8 bg-cream/40 transition-all duration-300 group-hover:w-12 group-hover:bg-cream" />
-              </button>
+          {/* Image slides - only render current and previous */}
+          {slides.map((slide, index) => {
+            if (slide.type !== "image") return null;
+            const isActive = index === current;
+            const isPrev = index === previous;
+
+            if (!isActive && !isPrev) return null;
+
+            return (
+              <ImageSlide
+                key={`image-${index}`}
+                slide={slide}
+                isActive={isActive}
+                isPrev={isPrev}
+                transitionMs={TRANSITION_MS}
+                index={index}
+              />
+            );
+          })}
+
+          {/* Overlay */}
+          <div className="absolute inset-0 z-25 bg-[#0a0f14]/40" suppressHydrationWarning />
+
+          {/* Gradient for text */}
+          <div className="absolute inset-x-0 bottom-0 z-30 h-[50%] bg-gradient-to-t from-[#0a0f14]/80 via-[#0a0f14]/40 to-transparent" suppressHydrationWarning />
+
+          {/* Content overlay */}
+          <div className="absolute inset-0 z-40 flex flex-col justify-end" suppressHydrationWarning>
+            <div className="mx-auto w-full max-w-[1400px] px-6 pb-12 lg:px-12 lg:pb-16">
+              {/* Project info */}
+              <div className="mb-8 flex flex-col gap-6 lg:mb-12 lg:flex-row lg:items-end lg:justify-between">
+                <div>
+                  <p
+                    className="mb-2 text-[11px] font-medium uppercase tracking-[0.2em] text-cream/60"
+                    key={`subtitle-${current}`}
+                    style={{
+                      animation: "fadeSlideUp 600ms cubic-bezier(0.16, 1, 0.3, 1) forwards",
+                    }}
+                  >
+                    {slides[current]?.subtitle}
+                  </p>
+                  <h2
+                    className="font-serif text-4xl leading-[1.1] tracking-tight text-cream md:text-6xl lg:text-7xl"
+                    key={`title-${current}`}
+                    style={{
+                      animation: "fadeSlideUp 600ms cubic-bezier(0.16, 1, 0.3, 1) 100ms forwards",
+                      opacity: 0,
+                      textShadow: "0 2px 20px rgba(0,0,0,0.4)",
+                    }}
+                  >
+                    {slides[current]?.title}
+                  </h2>
+                  <p
+                    className="mt-3 text-sm text-cream/50"
+                    key={`location-${current}`}
+                    style={{
+                      animation: "fadeSlideUp 600ms cubic-bezier(0.16, 1, 0.3, 1) 200ms forwards",
+                      opacity: 0,
+                    }}
+                  >
+                    {slides[current]?.location}
+                  </p>
+                </div>
+
+                <div
+                  key={`cta-${current}`}
+                  style={{
+                    animation: "fadeSlideUp 600ms cubic-bezier(0.16, 1, 0.3, 1) 300ms forwards",
+                    opacity: 0,
+                  }}
+                >
+                  <button
+                    onClick={() => {
+                      const projectsSection = document.getElementById("projects");
+                      projectsSection?.scrollIntoView({ behavior: "smooth" });
+                    }}
+                    className="group inline-flex items-center gap-3 text-[11px] font-medium uppercase tracking-[0.2em] text-cream/80 transition-colors duration-300 hover:text-cream"
+                  >
+                    {"View Projects"}
+                    <span className="inline-block h-px w-8 bg-cream/40 transition-all duration-300 group-hover:w-12 group-hover:bg-cream" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Progress bars */}
+              <ProgressBar
+                slides={slides}
+                current={current}
+                progress={progress}
+                onSlideClick={goToSlide}
+              />
+
+              {/* Counter */}
+              <div className="mt-4 flex items-center justify-between">
+                <span className="text-[11px] font-medium tabular-nums tracking-[0.1em] text-cream/50">
+                  {String(current + 1).padStart(2, "0")}
+                  {" / "}
+                  {String(slides.length).padStart(2, "0")}
+                </span>
+                <span className="text-[11px] uppercase tracking-[0.2em] text-cream/30">
+                  {"Scroll to explore"}
+                </span>
+              </div>
             </div>
           </div>
 
-          {/* Progress bars */}
-          <ProgressBar
-            slides={slides}
-            current={current}
-            progress={progress}
-            onSlideClick={goToSlide}
-          />
-
-          {/* Counter */}
-          <div className="mt-4 flex items-center justify-between">
-            <span className="text-[11px] font-medium tabular-nums tracking-[0.1em] text-cream/50">
-              {String(current + 1).padStart(2, "0")}
-              {" / "}
-              {String(slides.length).padStart(2, "0")}
-            </span>
-            <span className="text-[11px] uppercase tracking-[0.2em] text-cream/30">
-              {"Scroll to explore"}
-            </span>
+          {/* Scroll indicator */}
+          <div className="absolute bottom-6 left-1/2 z-40 -translate-x-1/2 lg:bottom-8">
+            <div className="flex h-10 w-[1px] flex-col items-center">
+              <div
+                className="w-[1px] bg-cream/60"
+                style={{ animation: "scrollPulseOptimized 2s ease-in-out infinite" }}
+              />
+            </div>
           </div>
-        </div>
-      </div>
-
-      {/* Scroll indicator */}
-      <div className="absolute bottom-6 left-1/2 z-40 -translate-x-1/2 lg:bottom-8">
-        <div className="flex h-10 w-[1px] flex-col items-center">
-          <div
-            className="w-[1px] bg-cream/60"
-            style={{ animation: "scrollPulseOptimized 2s ease-in-out infinite" }}
-          />
-        </div>
-      </div>
+        </>
+      )}
     </section>
   );
 }

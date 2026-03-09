@@ -87,7 +87,7 @@ const ImageSlide = memo(function ImageSlide({
   );
 });
 
-// CSS-animated progress bar - no React re-renders
+// Static progress bars - no animation
 const ProgressBars = memo(function ProgressBars({
   slides,
   current,
@@ -106,15 +106,12 @@ const ProgressBars = memo(function ProgressBars({
           className="group relative flex h-8 flex-1 items-end"
           aria-label={`Go to slide ${index + 1}`}
         >
-          <div className="relative h-[2px] w-full overflow-hidden bg-cream/20 transition-colors duration-300 group-hover:bg-cream/30">
-            <div
-              className="h-full bg-cream"
-              style={{
-                width: index <= current ? "100%" : "0%",
-                transition: index === current ? "none" : "width 400ms linear",
-              }}
-            />
-          </div>
+          <div
+            className={cn(
+              "h-[2px] w-full transition-colors duration-300",
+              index <= current ? "bg-cream" : "bg-cream/20 group-hover:bg-cream/30",
+            )}
+          />
         </button>
       ))}
     </div>

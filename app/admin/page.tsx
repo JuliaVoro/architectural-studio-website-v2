@@ -49,22 +49,6 @@ export default function AdminHomePage() {
           </div>
         </Link>
         <Link
-          href="/admin/hero-template"
-          className="group flex flex-col justify-between rounded-lg border border-neutral-200 bg-white p-4 transition hover:border-neutral-900"
-        >
-          <div>
-            <div className="mb-2 text-xs font-medium uppercase tracking-[0.2em] text-neutral-500">
-              Hero Template
-            </div>
-            <p className="text-sm text-neutral-600">
-              Choose between slider and split templates. Edit split template content with live preview.
-            </p>
-          </div>
-          <div className="mt-4 text-xs font-medium uppercase tracking-[0.2em] text-neutral-900">
-            Manage →
-          </div>
-        </Link>
-        <Link
           href="/admin/hero-slides"
           className="group flex flex-col justify-between rounded-lg border border-neutral-200 bg-white p-4 transition hover:border-neutral-900"
         >

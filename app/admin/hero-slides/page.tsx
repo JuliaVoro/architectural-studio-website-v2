@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Loader2 } from "lucide-react";
 
 type EditableSlide = Omit<HeroSlide, "createdAt" | "updatedAt"> & {
   createdAt?: string;
@@ -18,6 +19,7 @@ export default function HeroSlidesAdminPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [uploadingVideo, setUploadingVideo] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadSlides() {
@@ -155,6 +157,38 @@ export default function HeroSlidesAdminPage() {
       );
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleVideoUpload(
+    slideId: string,
+    file: File,
+  ) {
+    setUploadingVideo(slideId);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch("/api/videos", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error ?? "Failed to upload video");
+      }
+
+      const data = await res.json() as { url: string };
+      updateSlide(slideId, { src: data.url });
+      setError(null);
+    } catch (err) {
+      console.error(err);
+      setError(
+        err instanceof Error ? err.message : "Failed to upload video. Try again.",
+      );
+    } finally {
+      setUploadingVideo(null);
     }
   }
 
@@ -324,19 +358,44 @@ export default function HeroSlidesAdminPage() {
                       />
                     </div>
                     {slide.type === "video" && (
-                      <div className="space-y-1">
-                        <Label className="text-[11px] uppercase tracking-[0.18em] text-neutral-500">
-                          Poster image URL
-                        </Label>
-                        <Input
-                          value={slide.poster ?? ""}
-                          onChange={(e) =>
-                            updateSlide(slide.id, { poster: e.target.value })
-                          }
-                          className="border-neutral-300 bg-neutral-50 text-sm"
-                          placeholder="/images/poster-office.jpg"
-                        />
-                      </div>
+                      <>
+                        <div className="space-y-1">
+                          <Label className="text-[11px] uppercase tracking-[0.18em] text-neutral-500">
+                            Or upload video file
+                          </Label>
+                          <div className="flex items-center gap-2">
+                            <Input
+                              type="file"
+                              accept="video/*"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                  handleVideoUpload(slide.id, file);
+                                  e.target.value = "";
+                                }
+                              }}
+                              disabled={uploadingVideo === slide.id}
+                              className="border-neutral-300 bg-neutral-50 text-sm"
+                            />
+                            {uploadingVideo === slide.id && (
+                              <Loader2 className="w-4 h-4 animate-spin text-neutral-500" />
+                            )}
+                          </div>
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-[11px] uppercase tracking-[0.18em] text-neutral-500">
+                            Poster image URL
+                          </Label>
+                          <Input
+                            value={slide.poster ?? ""}
+                            onChange={(e) =>
+                              updateSlide(slide.id, { poster: e.target.value })
+                            }
+                            className="border-neutral-300 bg-neutral-50 text-sm"
+                            placeholder="/images/poster-office.jpg"
+                          />
+                        </div>
+                      </>
                     )}
                   </div>
 

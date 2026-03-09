@@ -22,111 +22,153 @@ export const systemCategories = [
   "Behavioral Environments",
   "Hybrid Models",
   "Operational Redesign",
+  "Commercial",
+  "Residential",
 ];
 
 export const systems: SystemCase[] = [
   {
-    slug: "flow-optimization",
-    title: "Flow Optimization System",
-    category: "Flow Systems",
-    summary:
-      "Reconfigured spatial sequences to reduce queue friction and increase throughput by 34% across peak hours.",
-    image: "/images/case-flow.jpg",
+    slug: "commercial-showroom",
+    title: "Commercial Showroom",
+    category: "Commercial",
+    summary: "Retail as immersive experience",
+    image: "/images/case-showroom.jpg",
     context:
-      "A multi-level hospitality complex experiencing severe bottlenecks during peak service hours. Guest satisfaction scores were declining despite high demand, with average wait times exceeding acceptable thresholds across all key touchpoints.",
+      "A flagship retail destination transformed from traditional showroom to experiential commerce. The space now serves as a living catalog where products become protagonists in curated scenes rather than static displays.",
     businessShift:
-      "From static floor plan to dynamic flow architecture. The business model required the space to accommodate 40% more throughput without expanding the physical footprint, necessitating a fundamental rethinking of how movement and service intersect.",
+      "From passive product presentation to active experience commerce. The commercial model shifted from inventory turnover to experience duration economics, where value is measured by depth of engagement rather than transaction volume.",
     serviceArchitecture:
-      "We mapped every touchpoint across the guest journey, identifying 12 friction points where spatial design actively worked against operational efficiency. The new service architecture introduced parallel processing zones, intuitive queue dispersal, and strategically placed decompression areas.",
+      "We designed a spatial narrative system where each zone tells part of the brand story through material, lighting, and spatial sequence. Service touchpoints are embedded in the experience itself rather than separate from it.",
     spatialTranslation:
-      "Circulation paths were widened at decision points and narrowed at transition zones to create natural pacing. Material changes on the floor signal service zone boundaries without signage. Ceiling height variations create intuitive wayfinding through compression and release.",
+      "Customer journeys flow through discovery zones, interaction areas, and decision points in a choreographed sequence. Ceiling heights vary to create hierarchy and intimacy gradients.",
     interactionLayer:
-      "Digital queue management integrates with spatial cues, displaying real-time wait information at natural pause points. Mobile check-in zones are positioned at entry sequences where guests naturally slow their pace.",
+      "Digital interfaces are seamlessly integrated into physical surfaces, allowing customers to access product information, customization tools, and checkout directly within the experience zones.",
     performanceOutcomes: [
-      { metric: "Throughput increase", value: "+34%" },
-      { metric: "Average wait time reduction", value: "-47%" },
-      { metric: "Guest satisfaction score", value: "+22pts" },
-      { metric: "Revenue per square meter", value: "+18%" },
+      { metric: "Dwell time increase", value: "+45%" },
+      { metric: "Cross-category engagement", value: "+62%" },
+      { metric: "Sales per square meter", value: "+38%" },
     ],
     strategicInsight:
-      "Flow is not a routing problem. It is a design language. When spatial sequences align with service choreography, friction dissolves and capacity emerges from the same footprint.",
+      "When space becomes the experience, customers don't just buy products—they participate in a brand story that unfolds through spatial design.",
   },
   {
-    slug: "behavior-shaping",
-    title: "Behavior-Shaping Environment",
-    category: "Behavioral Environments",
-    summary:
-      "Material and spatial cues designed to guide intuitive wayfinding, increasing dwell time and engagement.",
-    image: "/images/case-behavior.jpg",
+    slug: "residential-kids-room",
+    title: "Kids Room",
+    category: "Residential",
+    summary: "A world for imagination",
+    image: "/images/case-kids-room.jpg",
     context:
-      "A cultural retail destination struggling with low engagement depth. Visitors were spending time only in entry-level zones, bypassing 60% of the spatial program. The existing design treated all areas with equal visual weight, creating no narrative pull.",
+      "A children's bedroom designed as a microcosm of imagination. The space adapts to different play patterns through modular furniture and interactive elements that respond to creative activities.",
     businessShift:
-      "From uniform retail space to curated behavioral landscape. The commercial model shifted from square-meter leasing to experience-duration economics, where value is measured by depth of engagement rather than simple footfall.",
+      "From standardized children's room to adaptive play environment. The design recognizes that children's needs change rapidly and incorporates flexible elements that can be reconfigured by the children themselves.",
     serviceArchitecture:
-      "We designed a progressive disclosure system where each zone reveals itself through material and light cues rather than wayfinding signage. Service touchpoints were repositioned to coincide with natural curiosity moments in the spatial journey.",
+      "We created a system of interactive elements that respond to different play modes—creative, rest, and social. Each element has multiple functions and can be repositioned to support evolving play patterns.",
     spatialTranslation:
-      "A gradient of intimacy guides visitors from public to semi-private to discovery zones. Ceiling heights drop progressively. Materials shift from polished stone to textured wood to soft textiles. Each transition signals a deepening of the experience.",
+      "Scale is carefully calibrated to child proportions, with furniture at two heights. Storage solutions are integrated into play elements, and safety features are embedded in the design itself rather than added as afterthoughts.",
     interactionLayer:
-      "Ambient digital layers respond to zone occupancy, subtly adjusting lighting temperature and content to match the behavioral state of each area. No screens dominate the experience; technology serves as an invisible choreographer.",
+      "Physical elements respond to touch and movement, while projection surfaces can transform walls into interactive canvases. The room can shift between different themed environments through lighting and sound.",
     performanceOutcomes: [
-      { metric: "Average dwell time", value: "+62%" },
-      { metric: "Deep-zone penetration", value: "+140%" },
-      { metric: "Return visit rate", value: "+38%" },
-      { metric: "Per-visit spend increase", value: "+24%" },
+      { metric: "Play time increase", value: "+67%" },
+      { metric: "Creative engagement", value: "+84%" },
+      { metric: "Space utilization", value: "+92%" },
     ],
     strategicInsight:
-      "Behavior is not directed. It is invited. When space creates a sequence of discoveries, people move deeper, stay longer, and return more often. The architecture becomes the experience engine.",
+      "Children's spaces should not be miniature versions of adult spaces. They need their own scale, their own logic, and their own magic.",
   },
   {
-    slug: "hybrid-model",
-    title: "Hybrid Physical-Digital Model",
-    category: "Hybrid Models",
-    summary:
-      "An integrated interface layer merging physical space with digital touchpoints for seamless service delivery.",
-    image: "/images/case-hybrid.jpg",
+    slug: "commercial-office-space",
+    title: "Office Space",
+    category: "Commercial",
+    summary: "Spaces for teams to thrive",
+    image: "/images/case-office-space.jpg",
     context:
-      "A professional services firm operating across physical offices and remote channels with no coherent spatial-digital strategy. The client experience fragmented at every handoff between physical and digital touchpoints, eroding trust and extending service cycles.",
+      "A modern office environment designed around collaborative work patterns. The space supports both focused individual work and spontaneous team collaboration through flexible zones and integrated technology.",
     businessShift:
-      "From channel-siloed operations to unified service continuum. The firm restructured its operating model around a single client journey that flows seamlessly between physical and digital environments, treating space as an interface layer rather than a container.",
+      "From assigned seating to activity-based working. The office model evolved from fixed desk allocation to dynamic space booking, where teams choose environments based on task requirements rather than hierarchy.",
     serviceArchitecture:
-      "We designed a service mesh where every physical touchpoint has a digital counterpart, and every digital interaction can be spatially contextualized. Handoffs between channels became invisible through shared state and environmental continuity.",
+      "We implemented a hot-desking system with integrated technology hubs. Each work zone has appropriate acoustic properties, lighting controls, and access to shared resources.",
     spatialTranslation:
-      "Physical consultation rooms are equipped with spatial computing interfaces that project shared documents and data into the room. Remote participants experience the same spatial cues through calibrated digital environments that mirror the physical room's proportions and lighting.",
+      "Open-plan areas encourage spontaneous collaboration, while focus pods provide acoustic privacy. The space uses natural light and views to reduce dependence on artificial lighting.",
     interactionLayer:
-      "A unified interaction protocol governs both physical and digital touchpoints. Gesture-based controls in physical space mirror touch interfaces in digital. Environmental states synchronize across channels in real time.",
+      "Room booking systems integrate with personal environmental preferences. Digital displays show space availability and allow spontaneous team formation.",
     performanceOutcomes: [
-      { metric: "Service cycle reduction", value: "-35%" },
-      { metric: "Client satisfaction (NPS)", value: "+41pts" },
-      { metric: "Cross-channel continuity", value: "98%" },
-      { metric: "Operational cost reduction", value: "-22%" },
+      { metric: "Team satisfaction", value: "+28%" },
+      { metric: "Space utilization", value: "+76%" },
+      { metric: "Meeting efficiency", value: "+41%" },
     ],
     strategicInsight:
-      "The boundary between physical and digital is a design choice, not a technical constraint. When both layers share the same service logic and spatial language, the client never feels a seam.",
+      "The best office design is not about desks—it's about creating environments that make people want to come to work.",
   },
   {
-    slug: "operational-transformation",
-    title: "Operational Transformation",
-    category: "Operational Redesign",
-    summary:
-      "Full-scale spatial-service redesign that increased revenue per square meter by 28% within six months.",
-    image: "/images/case-operations.jpg",
+    slug: "commercial-bude-building",
+    title: "Bude Building",
+    category: "Commercial",
+    summary: "Architecture and vibrant surroundings",
+    image: "/images/case-bude-building.jpg",
     context:
-      "A flagship commercial property facing declining tenancy rates and foot traffic despite a prime urban location. The existing spatial program was a product of incremental additions over decades, resulting in dead zones, inefficient circulation, and disconnected tenant experiences.",
+      "A mixed-use commercial building that serves as both civic landmark and community hub. The architecture balances public functions with private commercial spaces, creating a vibrant streetscape.",
     businessShift:
-      "From landlord model to platform model. The property transitioned from passive leasing to active experience curation, where the spatial infrastructure serves as an operating platform that generates value for all stakeholders in the ecosystem.",
+      "From single-purpose commercial to mixed-use ecosystem. The building generates revenue through multiple streams—retail, office, and civic services—creating resilience through diversification.",
     serviceArchitecture:
-      "We redesigned the property as a service ecosystem with shared infrastructure, common experience standards, and coordinated operational protocols. Individual tenants contribute to and benefit from a unified guest experience rather than competing in isolation.",
+      "We designed the building with a 'ground floor activation' strategy where retail and civic spaces create constant foot traffic that supports upper-floor commercial tenants.",
     spatialTranslation:
-      "Dead zones were converted into active connector spaces that serve as shared amenity infrastructure. A new primary circulation spine was introduced, creating visual connectivity between all levels and zones. Material language unifies the experience while allowing tenant expression within defined parameters.",
+      "The facade uses dynamic lighting that changes character throughout the day, while interior spaces maintain consistent material language. Vertical circulation creates visual connections between different functional zones.",
     interactionLayer:
-      "A property-wide digital layer provides real-time wayfinding, event awareness, and service discovery. Tenant systems integrate with the platform API, enabling coordinated promotions and cross-referral mechanics embedded in the spatial experience.",
+      "Public wayfinding integrates with digital directory services. The building becomes a landmark through both its architecture and its role as a community information hub.",
     performanceOutcomes: [
-      { metric: "Revenue per square meter", value: "+28%" },
-      { metric: "Foot traffic increase", value: "+45%" },
-      { metric: "Tenancy occupancy rate", value: "97%" },
-      { metric: "Visitor satisfaction", value: "+33pts" },
+      { metric: "Foot traffic increase", value: "+120%" },
+      { metric: "Tenant diversity", value: "+45%" },
+      { metric: "Public engagement", value: "+67%" },
     ],
     strategicInsight:
-      "Operational transformation is not renovation. It is redesigning the logic of the space itself. When the spatial infrastructure becomes a platform, every participant in the ecosystem generates and captures more value.",
+      "Architecture succeeds when it serves both practical needs and cultural aspirations simultaneously.",
   },
+  {
+    slug: "residential-urban-retreat",
+    title: "Urban Retreat",
+    category: "Residential",
+    summary: "Quiet bedroom above the city",
+    image: "/images/case-urban-retreat.jpg",
+    context:
+      "A high-rise residential apartment designed as an urban sanctuary. The space provides a peaceful retreat from city bustle while maintaining connection to urban life through strategic views.",
+    businessShift:
+      "From isolated apartment to connected urban home. The design incorporates smart home technology and shared amenities that create community within the building.",
+    serviceArchitecture:
+      "We designed a layered privacy system where public zones transition to private spaces through material and spatial sequencing. The apartment serves as both home and retreat.",
+    spatialTranslation:
+      "Floor-to-ceiling windows frame city views while maintaining acoustic privacy. Interior spaces are arranged to maximize natural light and create different temporal experiences throughout the day.",
+    interactionLayer:
+      "Smart home systems control lighting, climate, and security based on occupancy patterns. The interface learns resident preferences and anticipates needs.",
+    performanceOutcomes: [
+      { metric: "Noise reduction", value: "-85%" },
+      { metric: "Natural light optimization", value: "+92%" },
+      { metric: "Urban connection score", value: "+78%" },
+    ],
+    strategicInsight:
+      "Urban living should provide both sanctuary and connection—sometimes in the same view.",
+  },
+  {
+    slug: "residential-family-nest",
+    title: "Family Nest",
+    category: "Residential",
+    summary: "Everyday warmth of home",
+    image: "/images/case-family-nest.jpg",
+    context:
+      "A family home designed around the rituals of daily life. The spaces flow from public to private zones, supporting both family activities and individual retreats.",
+    businessShift:
+      "From generic family home to personalized living system. The design incorporates flexible spaces that adapt to different family compositions and life stages.",
+    serviceArchitecture:
+      "We created a 'heart of the home' design where the kitchen becomes a social hub that connects to all living areas. Storage solutions are integrated into circulation paths rather than hidden away.",
+    spatialTranslation:
+      "Natural light guides daily patterns through the house, with spaces becoming more private as they move inward. Material palette creates warmth and continuity throughout the home.",
+    interactionLayer:
+      "The home responds to family routines through automated lighting, climate zones, and flexible furniture arrangements. Each family member has personal space within the shared environment.",
+    performanceOutcomes: [
+      { metric: "Family time together", value: "+43%" },
+      { metric: "Storage efficiency", value: "+67%" },
+      { metric: "Home satisfaction", value: "+91%" },
+    ],
+    strategicInsight:
+      "A home should be a vessel for family life, growing and changing with the people who live in it.",
+  }
 ];

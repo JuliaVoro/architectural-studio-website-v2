@@ -113,9 +113,9 @@ export default function ApproachPage() {
         </div>
 
         {/* Image */}
-        <div className="mt-16 relative aspect-[21/9] w-full overflow-hidden bg-sand">
+        <div className="mt-16 relative aspect-[16/9] w-full overflow-hidden bg-sand">
           <Image
-            src="/images/approach.jpg"
+            src="/images/slide1.png"
             alt="Intersecting architectural planes with light and shadow"
             fill
             className="object-cover"
@@ -126,9 +126,9 @@ export default function ApproachPage() {
 
         {/* How I Work */}
         <div className="mt-16 md:mt-32 border-t border-border pt-12 md:pt-20">
-          <div className="grid grid-cols-1 gap-16 lg:grid-cols-12 lg:gap-20">
-            <div className="lg:col-span-6">
-              <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground mb-6">
+          <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-20">
+            <div className="lg:col-span-7">
+              <p className="font-serif text-3xl leading-[1.2] tracking-tight text-foreground md:text-4xl lg:text-5xl text-balance mb-8">
                 How I Work
               </p>
               <div className="space-y-8">
@@ -154,18 +154,6 @@ export default function ApproachPage() {
               </div>
             </div>
           </div>
-        </div>
-
-        {/* Image */}
-        <div className="mt-16 relative aspect-[21/9] w-full overflow-hidden bg-sand">
-          <Image
-            src="/images/approach.jpg"
-            alt="Intersecting architectural planes with light and shadow"
-            fill
-            className="object-cover"
-            priority
-            sizes="100vw"
-          />
         </div>
 
         {/* Methodology */}

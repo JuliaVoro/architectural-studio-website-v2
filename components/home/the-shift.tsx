@@ -8,9 +8,7 @@ export function TheShift() {
               The Shift
             </p>
             <h2 className="mt-6 font-serif text-3xl leading-[1.2] tracking-tight text-foreground md:text-4xl lg:text-5xl text-balance">
-              Most spaces are designed as objects.
-              <br />
-              We design them as systems.
+              From designing objects to systems
             </h2>
           </div>
           <div className="lg:col-span-5 lg:col-start-8">
@@ -22,7 +20,7 @@ export function TheShift() {
                 Service without space becomes abstract.
               </p>
               <p className="text-base leading-relaxed text-foreground">
-                We integrate both into one operational model.
+                We design both — as one. operational model.
               </p>
             </div>
           </div>

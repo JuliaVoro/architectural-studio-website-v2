@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { supabaseServerClient } from "@/lib/supabase-client";
+import { isAdmin } from "@/lib/auth";
 import type {
   Project,
   ProjectSection,
@@ -22,15 +23,17 @@ import { GalleryGrid } from "@/components/projects/GalleryGrid";
 import { TechnicalDrawings } from "@/components/projects/TechnicalDrawings";
 import { KeyFactsTable } from "@/components/projects/KeyFactsTable";
 import { getProjectMediaUrl } from "@/lib/projects";
-import { Upload } from "lucide-react";
+import { Upload, Edit } from "lucide-react";
 
 interface Props {
   params: Promise<{ slug: string }>;
 }
 
-async function getProjectBySlug(slug: string): Promise<Project | null> {
+async function getProjectBySlug(slug: string): Promise<{ project: Project | null; isAdmin: boolean }> {
+  const isAdminUser = await isAdmin();
+
   if (!supabaseServerClient) {
-    return null;
+    return { project: null, isAdmin: isAdminUser };
   }
 
   const { data, error } = await supabaseServerClient
@@ -39,7 +42,7 @@ async function getProjectBySlug(slug: string): Promise<Project | null> {
 
   if (error || !data) {
     console.error("Error loading project:", error);
-    return null;
+    return { project: null, isAdmin: isAdminUser };
   }
 
   const row = (data ?? []).find((item) => {
@@ -48,15 +51,17 @@ async function getProjectBySlug(slug: string): Promise<Project | null> {
   });
 
   if (!row) {
-    return null;
+    return { project: null, isAdmin: isAdminUser };
   }
 
-  return {
+  const project: Project = {
     id: row.id,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     status: row.status,
     featured: row.featured,
+    private: row.private || false,
+    order: row.order || 0,
     slug: row.slug,
     keyFacts: {
       title: row.title,
@@ -70,9 +75,11 @@ async function getProjectBySlug(slug: string): Promise<Project | null> {
     heroImagePath: row.hero_image_path ?? undefined,
     introText: row.intro_text ?? undefined,
     story: row.story ?? undefined,
-    sections: (row.sections as ProjectSection[] | null) ?? undefined,
+    sections: row.sections ?? undefined,
     aiRawResponse: row.ai_raw_response ?? undefined,
   };
+
+  return { project, isAdmin: isAdminUser };
 }
 
 export async function generateStaticParams() {
@@ -90,7 +97,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const project = await getProjectBySlug(slug);
+  const { project } = await getProjectBySlug(slug);
   if (!project) return {};
 
   const title = `${project.keyFacts.title} – Architecture Case Study`;
@@ -124,7 +131,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function SystemDetailPage({ params }: Props) {
   const { slug } = await params;
-  const project = await getProjectBySlug(slug);
+  const { project, isAdmin } = await getProjectBySlug(slug);
 
   if (!project) notFound();
 
@@ -470,6 +477,17 @@ export default async function SystemDetailPage({ params }: Props) {
           </div>
         </div>
       </footer>
+
+      {/* Admin Edit Button - Fixed Position */}
+      {isAdmin && (
+        <Link
+          href={`/admin/projects/${project.slug}/edit`}
+          className="fixed bottom-6 right-6 z-50 bg-black text-white p-4 rounded-full shadow-lg hover:bg-neutral-800 transition-colors duration-200 group"
+          title="Edit Project"
+        >
+          <Edit className="w-5 h-5 group-hover:scale-110 transition-transform duration-200" />
+        </Link>
+      )}
     </div>
   );
 }

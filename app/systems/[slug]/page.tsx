@@ -257,9 +257,11 @@ export default async function SystemDetailPage({ params }: Props) {
                 return (
                   <div key={s.id} className="grid grid-cols-1 gap-16 md:grid-cols-12">
                     <div className="md:col-span-3">
-                      <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
-                        Image
-                      </p>
+                      {s.label?.trim() && (
+                        <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
+                          {s.label.trim()}
+                        </p>
+                      )}
                     </div>
                     <div className="md:col-span-9">
                       <div className="max-w-4xl">
@@ -283,9 +285,11 @@ export default async function SystemDetailPage({ params }: Props) {
                 return (
                   <div key={s.id} className="grid grid-cols-1 gap-16 md:grid-cols-12">
                     <div className="md:col-span-3">
-                      <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
-                        {s.label ? s.label : "NO LABEL"}
-                      </p>
+                      {s.label?.trim() && (
+                        <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
+                          {s.label.trim()}
+                        </p>
+                      )}
                     </div>
                     <div className="md:col-span-9">
                       <div className="max-w-3xl">
@@ -313,9 +317,11 @@ export default async function SystemDetailPage({ params }: Props) {
                 return (
                   <div key={s.id} className="grid grid-cols-1 gap-16 md:grid-cols-12">
                     <div className="md:col-span-3">
-                      <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
-                        {s.label || "Video"}
-                      </p>
+                      {s.label?.trim() && (
+                        <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
+                          {s.label.trim()}
+                        </p>
+                      )}
                     </div>
                     <div className="md:col-span-9">
                       <div className="max-w-4xl">
@@ -349,9 +355,11 @@ export default async function SystemDetailPage({ params }: Props) {
                 return (
                   <div key={s.id} className="grid grid-cols-1 gap-16 md:grid-cols-12">
                     <div className="md:col-span-3">
-                      <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
-                        {s.label || "Gallery"}
-                      </p>
+                      {s.label?.trim() && (
+                        <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
+                          {s.label.trim()}
+                        </p>
+                      )}
                     </div>
                     <div className="md:col-span-9">
                       <div className="max-w-5xl">
@@ -366,9 +374,11 @@ export default async function SystemDetailPage({ params }: Props) {
                 return (
                   <div key={s.id} className="grid grid-cols-1 gap-16 md:grid-cols-12">
                     <div className="md:col-span-3">
-                      <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
-                        Drawings
-                      </p>
+                      {s.label?.trim() && (
+                        <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
+                          {s.label.trim()}
+                        </p>
+                      )}
                     </div>
                     <div className="md:col-span-9">
                       <div className="max-w-5xl">
@@ -386,9 +396,11 @@ export default async function SystemDetailPage({ params }: Props) {
                 return (
                   <div key={s.id} className="grid grid-cols-1 gap-16 md:grid-cols-12">
                     <div className="md:col-span-3">
-                      <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
-                        {s.label || "Quote"}
-                      </p>
+                      {s.label?.trim() && (
+                        <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
+                          {s.label.trim()}
+                        </p>
+                      )}
                     </div>
                     <div className="md:col-span-9">
                       <div className="max-w-4xl">
@@ -405,9 +417,11 @@ export default async function SystemDetailPage({ params }: Props) {
                 return (
                   <div key={s.id} className="grid grid-cols-1 gap-16 md:grid-cols-12">
                     <div className="md:col-span-3">
-                      <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
-                        Download
-                      </p>
+                      {s.label?.trim() && (
+                        <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
+                          {s.label.trim()}
+                        </p>
+                      )}
                     </div>
                     <div className="md:col-span-9">
                       <div className="max-w-3xl">

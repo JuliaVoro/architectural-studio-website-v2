@@ -63,6 +63,7 @@ async function getProjectBySlug(slug: string): Promise<{ project: Project | null
     private: row.private || false,
     order: row.order || 0,
     slug: row.slug,
+    category: row.category || undefined,
     keyFacts: {
       title: row.title,
       location: row.location ?? undefined,
@@ -179,7 +180,7 @@ export default async function SystemDetailPage({ params }: Props) {
                 {/* Right: project title */}
                 <div className="lg:col-span-7">
                   <p className="mb-2 text-[11px] font-medium uppercase tracking-[0.2em] text-white/60">
-                    {project.keyFacts.materials?.split(',')[0].trim() || "Architecture"}
+                    {project.category ? project.category.charAt(0).toUpperCase() + project.category.slice(1) : "Architecture"}
                   </p>
                   <h1 className="font-serif text-4xl leading-[1.1] tracking-tight text-white md:text-6xl lg:text-7xl" style={{ textShadow: "0 2px 20px rgba(0,0,0,0.4)" }}>
                     {project.keyFacts.title}
@@ -232,31 +233,10 @@ export default async function SystemDetailPage({ params }: Props) {
           </div>
         </div>
 
-        {/* Project Story */}
-        {project.story && (
-          <div className="mb-24">
-            <div className="grid grid-cols-1 gap-16 md:grid-cols-12">
-              <div className="md:col-span-3">
-                <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
-                  Context
-                </p>
-              </div>
-              <div className="md:col-span-9">
-                <div className="prose prose-lg max-w-none">
-                  {project.story.split('\n\n').map((paragraph, index) => (
-                    <p key={index} className="text-neutral-700 leading-relaxed mb-4">
-                      {paragraph}
-                    </p>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Content Sections */}
         <div className="space-y-24">
-          {filteredSections.map((section) => {
+          {filteredSections.map((section, index) => {
             
             switch (section.type) {
               case "full_image": {
@@ -306,11 +286,13 @@ export default async function SystemDetailPage({ params }: Props) {
                           </h2>
                         )}
                         <div className="prose prose-lg max-w-none">
-                          {s.body.split('\n\n').map((paragraph, index) => (
+                          {s.body ? s.body.split('\n\n').map((paragraph: string, index: number) => (
                             <p key={index} className="text-neutral-700 leading-relaxed mb-4">
                               {paragraph}
                             </p>
-                          ))}
+                          )) : (
+                            <p className="text-neutral-700 leading-relaxed mb-4">No content available</p>
+                          )}
                         </div>
                       </div>
                     </div>

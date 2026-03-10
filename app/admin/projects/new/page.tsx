@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 type MediaGroup = {
   images: File[];
@@ -25,6 +26,7 @@ export default function NewProjectPage() {
   const [size, setSize] = useState("");
   const [materials, setMaterials] = useState("");
   const [client, setClient] = useState("");
+  const [category, setCategory] = useState<"residential" | "commercial" | "mixed">("residential");
   const [notes, setNotes] = useState("");
   const [media, setMedia] = useState<MediaGroup>({
     images: [],
@@ -102,6 +104,10 @@ export default function NewProjectPage() {
         const safeName = file.name.replace(/[^a-z0-9_.-]/gi, "_").toLowerCase();
         const path = `${folder}/${kind}/${Date.now()}-${safeName}`;
 
+        if (!supabaseBrowserClient) {
+          throw new Error("Supabase client not available");
+        }
+
         const { data, error } = await supabaseBrowserClient.storage
           .from(bucket)
           .upload(path, file, {
@@ -148,6 +154,7 @@ export default function NewProjectPage() {
           materials: materials || undefined,
           client: client || undefined,
         },
+        category,
         notes: notes || undefined,
         imagePaths,
         videoPaths,
@@ -212,6 +219,19 @@ export default function NewProjectPage() {
               placeholder="House on a Narrow Plot"
               className="border-neutral-300 bg-neutral-50"
             />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="category">Project category</Label>
+            <Select value={category} onValueChange={(value: "residential" | "commercial" | "mixed") => setCategory(value)}>
+              <SelectTrigger className="border-neutral-300 bg-neutral-50">
+                <SelectValue placeholder="Select category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="residential">Residential</SelectItem>
+                <SelectItem value="commercial">Commercial</SelectItem>
+                <SelectItem value="mixed">Mixed-use</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <div className="grid gap-4 md:grid-cols-3">
             <div className="space-y-2">

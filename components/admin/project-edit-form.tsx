@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, Sparkles, RefreshCw, Plus, Trash2, Edit3, Image as ImageIcon, Video, FileText, Move, Upload, GripVertical } from "lucide-react";
 import Image from "next/image";
 
@@ -560,7 +561,7 @@ function SectionEditor({ section, index, onUpdate, onDelete, onMoveUp, onMoveDow
             {section.type === "quote_block" && <span className="text-lg">"</span>}
             {section.type === "download_file" && <Upload className="w-4 h-4" />}
             <span className="text-sm font-medium capitalize">
-              {section.type.replace("_", " ")}
+              {section.type ? section.type.replace("_", " ") : "Unknown"}
             </span>
           </div>
           <div className="flex gap-2">
@@ -630,7 +631,7 @@ function NewSectionForm({ onAdd }: { onAdd: (section: ProjectSection) => void })
 
   const createNewSection = () => {
     const newSection: any = {
-      id: `section-${Date.now()}`,
+      id: `section-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       type: sectionType,
     };
 
@@ -779,6 +780,7 @@ export default function ProjectEditForm({ project }: ProjectEditFormProps) {
     heroImagePath: project.heroImagePath || "",
     private: project.private || false,
     order: project.order || 0,
+    category: project.category || "residential",
   });
 
   const handleHeroImageUpload = async (file: File) => {
@@ -850,8 +852,11 @@ export default function ProjectEditForm({ project }: ProjectEditFormProps) {
 
       const data = await response.json();
       
+      console.log("AI Regeneration Response:", data); // DEBUG
+      
       if (field === "fullProject") {
         // Apply full project structure
+        console.log("Applying full project structure:", data); // DEBUG
         if (data.sections) {
           setSections(data.sections);
         }
@@ -862,6 +867,7 @@ export default function ProjectEditForm({ project }: ProjectEditFormProps) {
           handleInputChange("story", data.story);
         }
       } else {
+        console.log("Setting AI suggestion for field:", field, "content:", data.content); // DEBUG
         setAiSuggestions(prev => ({
           ...prev,
           [field]: data.content
@@ -929,13 +935,16 @@ export default function ProjectEditForm({ project }: ProjectEditFormProps) {
   };
 
   const handleSave = async () => {
-    setSaving(true);
-    
-    try {
-      if (!supabaseBrowserClient) {
-        throw new Error("Supabase client not available");
-      }
+    if (!formData.title.trim()) {
+      alert("Please enter a project title");
+      return;
+    }
 
+    setSaving(true);
+
+    try {
+      console.log("Saving project with category:", formData.category); // DEBUG
+      
       const { error } = await supabaseBrowserClient
         .from("projects")
         .update({
@@ -952,9 +961,12 @@ export default function ProjectEditForm({ project }: ProjectEditFormProps) {
           sections: sections,
           private: formData.private,
           order: formData.order,
+          category: formData.category,
           updated_at: new Date().toISOString(),
         })
         .eq("id", project.id);
+
+      console.log("Save result - error:", error); // DEBUG
 
       if (error) {
         throw error;
@@ -987,6 +999,19 @@ export default function ProjectEditForm({ project }: ProjectEditFormProps) {
                 onChange={(e) => handleInputChange("title", e.target.value)}
                 placeholder="Project title"
               />
+            </div>
+            <div>
+              <Label htmlFor="category">Project Category</Label>
+              <Select value={formData.category} onValueChange={(value: "residential" | "commercial" | "mixed") => handleInputChange("category", value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="residential">Residential</SelectItem>
+                  <SelectItem value="commercial">Commercial</SelectItem>
+                  <SelectItem value="mixed">Mixed-use</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             
             <div>

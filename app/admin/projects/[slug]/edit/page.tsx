@@ -26,7 +26,10 @@ async function getProjectBySlug(slug: string): Promise<Project | null> {
     updatedAt: data.updated_at,
     status: data.status,
     featured: data.featured,
+    private: data.private || false,
+    order: data.order || 0,
     slug: data.slug,
+    category: data.category || undefined,
     keyFacts: {
       title: data.title,
       location: data.location ?? undefined,

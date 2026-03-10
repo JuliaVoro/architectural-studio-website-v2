@@ -29,7 +29,13 @@ async function getProjects(sortBy: string = 'order', sortOrder: 'asc' | 'desc' =
     query = query.order('private', { ascending: sortOrder === 'asc' });
   } else if (sortBy === 'order') {
     // Try to sort by order, fallback to created_at if column doesn't exist
-    query = query.order('order', { ascending: true }).order('created_at', { ascending: false });
+    try {
+      query = query.order('order', { ascending: true }).order('created_at', { ascending: false });
+    } catch (error) {
+      // If order column doesn't exist, fall back to created_at
+      console.warn("Order column not available, falling back to created_at");
+      query = query.order('created_at', { ascending: false });
+    }
   } else {
     // Default: created_at
     query = query.order(sortBy, { ascending: sortOrder === 'asc' });
@@ -37,8 +43,11 @@ async function getProjects(sortBy: string = 'order', sortOrder: 'asc' | 'desc' =
 
   const { data, error } = await query;
 
+  console.log("Supabase query result:", { data, error }); // DEBUG
+  
   if (error || !data) {
     console.error("Error loading projects:", error);
+    console.error("Error details:", JSON.stringify(error, null, 2)); // DEBUG
     return [];
   }
 
@@ -93,7 +102,7 @@ async function deleteProject(id: string): Promise<boolean> {
 export default function AdminProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
-  const [sortBy, setSortBy] = useState('created_at'); // Temporarily default to created_at
+  const [sortBy, setSortBy] = useState('created_at'); // Default to created_at since order column may not exist
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [draggedProject, setDraggedProject] = useState<Project | null>(null);
 

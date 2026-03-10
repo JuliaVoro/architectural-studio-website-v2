@@ -2,6 +2,8 @@ export type ProjectStatus = "draft" | "processing" | "published" | "failed";
 
 export type ProjectMediaType = "image" | "video" | "drawing" | "other";
 
+export type ProjectCategory = "residential" | "commercial" | "mixed";
+
 export interface ProjectKeyFacts {
   title: string;
   location?: string;
@@ -109,6 +111,7 @@ export interface Project {
   private: boolean;
   order?: number;
   slug: string;
+  category?: ProjectCategory;
   keyFacts: ProjectKeyFacts;
   notes?: string;
   heroImagePath?: string;
@@ -121,6 +124,7 @@ export interface Project {
 
 export interface CreateProjectPayload {
   keyFacts: ProjectKeyFacts;
+  category?: ProjectCategory;
   notes?: string;
   imagePaths: string[];
   videoPaths: string[];
@@ -128,16 +132,25 @@ export interface CreateProjectPayload {
 }
 
 export function getProjectMediaUrl(storagePath: string): string {
+  if (!storagePath) {
+    console.warn("getProjectMediaUrl called with empty storagePath");
+    return "/placeholder.jpg"; // Return placeholder instead of empty string
+  }
+
   const baseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  console.log("getProjectMediaUrl - baseUrl:", baseUrl, "storagePath:", storagePath);
 
   if (!baseUrl) {
+    console.warn("No NEXT_PUBLIC_SUPABASE_URL found");
     return storagePath;
   }
 
   const normalizedBase = baseUrl.replace(/\/+$/, "");
   const normalizedPath = storagePath.replace(/^\/+/, "");
-
-  return `${normalizedBase}/storage/v1/object/public/project-media/${normalizedPath}`;
+  const finalUrl = `${normalizedBase}/storage/v1/object/public/project-media/${normalizedPath}`;
+  
+  console.log("getProjectMediaUrl - final URL:", finalUrl);
+  return finalUrl;
 }
 
 export function getValidProjectMediaUrl(storagePath: string | undefined): string | null {

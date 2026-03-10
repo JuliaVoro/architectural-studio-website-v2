@@ -20,7 +20,7 @@ export function TheShift() {
                 Service without space becomes abstract.
               </p>
               <p className="text-base leading-relaxed text-foreground">
-                We design both — as one. operational model.
+                Designing both as one operational model.
               </p>
             </div>
           </div>

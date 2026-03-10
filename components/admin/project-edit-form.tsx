@@ -945,6 +945,10 @@ export default function ProjectEditForm({ project }: ProjectEditFormProps) {
     try {
       console.log("Saving project with category:", formData.category); // DEBUG
       
+      if (!supabaseBrowserClient) {
+        throw new Error("Supabase client not available");
+      }
+      
       const { error } = await supabaseBrowserClient
         .from("projects")
         .update({
@@ -972,8 +976,8 @@ export default function ProjectEditForm({ project }: ProjectEditFormProps) {
         throw error;
       }
 
-      // Redirect back to admin projects
-      router.push("/admin/projects");
+      // Show success message and stay on editing page
+      alert("Project saved successfully!");
     } catch (error) {
       console.error("Error saving project:", error);
       alert("Failed to save project. Please try again.");

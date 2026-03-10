@@ -52,7 +52,7 @@ export function SystemModel() {
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-12">
           <div className="lg:col-span-4">
             <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
-              Our System
+              System
             </p>
             <h2 className="mt-6 font-serif text-3xl leading-[1.2] tracking-tight text-foreground md:text-4xl text-balance">
               The 5-Layer Model

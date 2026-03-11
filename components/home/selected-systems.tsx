@@ -179,7 +179,7 @@ export function SelectedStories() {
                   </div>
                     <div className="mt-5">
                       <div className="flex items-center gap-2">
-                        <h3 className="text-base font-medium text-foreground">
+                        <h3 className="text-lg font-medium text-foreground">
                           {project.keyFacts.title}
                         </h3>
                         <span className="text-[10px] px-2 py-1 bg-neutral-100 text-neutral-600 rounded-full">
@@ -246,7 +246,7 @@ export function SelectedStories() {
                     )}
                   </div>
                   <div className="mt-5">
-                    <h3 className="text-base font-medium text-foreground">
+                    <h3 className="text-lg font-medium text-foreground">
                       {project.keyFacts.title}
                     </h3>
                     <p className="mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">

@@ -13,7 +13,7 @@ export default function AdminHomePage() {
           magazine-style presentation.
         </p>
       </header>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
         <Link
           href="/admin/projects/new"
           className="group flex flex-col justify-between rounded-lg border border-dashed border-neutral-300 bg-white p-4 transition hover:border-neutral-900"
@@ -71,15 +71,30 @@ export default function AdminHomePage() {
         >
           <div>
             <div className="mb-2 text-xs font-medium uppercase tracking-[0.2em] text-neutral-500">
-              Hero Configuration
+              Hero Config
             </div>
             <p className="text-sm text-neutral-600">
-              Choose between slider and single hero templates. Configure
-              single hero content and styling.
+              Configure the main hero section text, layout, and styling.
             </p>
           </div>
           <div className="mt-4 text-xs font-medium uppercase tracking-[0.2em] text-neutral-900">
             Configure →
+          </div>
+        </Link>
+        <Link
+          href="/admin/typography"
+          className="group flex flex-col justify-between rounded-lg border border-neutral-200 bg-white p-4 transition hover:border-neutral-900"
+        >
+          <div>
+            <div className="mb-2 text-xs font-medium uppercase tracking-[0.2em] text-neutral-500">
+              Typography
+            </div>
+            <p className="text-sm text-neutral-600">
+              Manage website fonts and type scale globally with live preview.
+            </p>
+          </div>
+          <div className="mt-4 text-xs font-medium uppercase tracking-[0.2em] text-neutral-900">
+            Customize →
           </div>
         </Link>
       </div>

@@ -65,7 +65,7 @@ export default function ApproachPage() {
             <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground mb-8">
               Approach
             </p>
-            <h1 className="font-serif text-4xl leading-[1.1] tracking-tight text-foreground md:text-5xl lg:text-7xl xl:text-8xl text-balance">
+            <h1 className="font-serif text-5xl leading-[1.1] tracking-tight text-foreground md:text-6xl lg:text-8xl text-balance">
               Designing systems, not isolated solutions
             </h1>
           </div>

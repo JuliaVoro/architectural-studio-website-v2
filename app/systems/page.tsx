@@ -40,11 +40,6 @@ export default function StoriesPage() {
               Featured Work
             </h1>
           </div>
-          <div className="lg:col-span-4 lg:col-start-8">
-            <p className="pt-2 text-base leading-relaxed text-muted-foreground lg:pt-16">
-              Projects exploring the intersection of space, service, and everyday experience.
-            </p>
-          </div>
         </div>
 
         {/* Grid */}

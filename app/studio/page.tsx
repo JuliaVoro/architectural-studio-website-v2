@@ -54,7 +54,7 @@ export default function StudioPage() {
           <div className="lg:col-span-8">
             <div className="relative aspect-[16/10] w-full overflow-hidden bg-sand">
               <Image
-                src="/images/portrate.png"
+                src="/images/photo.png"
                 alt="Architectural studio workspace"
                 fill
                 className="object-cover"

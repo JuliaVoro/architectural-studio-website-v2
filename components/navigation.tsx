@@ -6,7 +6,6 @@ import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 
 const navLinks = [
-  { href: "/", label: "Home" },
   { href: "/systems", label: "Stories" },
   { href: "/approach", label: "Approach" },
   { href: "/studio", label: "About" },

@@ -5,11 +5,8 @@ import type { Project } from "@/lib/projects";
 import { StoriesGrid } from "@/components/systems/systems-grid";
 import { StoriesPagination } from "@/components/systems/stories-pagination";
 
-const PROJECTS_PER_PAGE = 6;
-
 export default function StoriesPage() {
   const [projects, setProjects] = useState<Project[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -30,11 +27,6 @@ export default function StoriesPage() {
     fetchProjects();
   }, []);
 
-  const totalPages = Math.ceil(projects.length / PROJECTS_PER_PAGE);
-  const startIndex = (currentPage - 1) * PROJECTS_PER_PAGE;
-  const endIndex = startIndex + PROJECTS_PER_PAGE;
-  const currentProjects = projects.slice(startIndex, endIndex);
-
   return (
     <section className="pt-32 pb-24 lg:pb-32">
       <div className="mx-auto max-w-[1400px] px-6 lg:px-12">
@@ -45,7 +37,7 @@ export default function StoriesPage() {
               Stories
             </p>
             <h1 className="mt-6 font-serif text-4xl leading-[1.1] tracking-tight text-foreground md:text-5xl lg:text-6xl text-balance">
-              Selected Projects
+              Featured Work
             </h1>
           </div>
           <div className="lg:col-span-4 lg:col-start-8">
@@ -56,16 +48,7 @@ export default function StoriesPage() {
         </div>
 
         {/* Grid */}
-        {!isLoading && <StoriesGrid projects={currentProjects} />}
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <StoriesPagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={setCurrentPage}
-          />
-        )}
+        {!isLoading && <StoriesGrid projects={projects} />}
       </div>
     </section>
   );

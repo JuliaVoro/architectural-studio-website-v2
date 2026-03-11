@@ -8,6 +8,7 @@ import { getProjectMediaUrl } from "@/lib/projects";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { GripVertical } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 async function getProjects(sortBy: string = 'order', sortOrder: 'asc' | 'desc' = 'asc'): Promise<Project[]> {
   if (!supabaseBrowserClient) {
@@ -183,6 +184,16 @@ export default function AdminProjectsPage() {
 
   return (
     <div className="space-y-6">
+      <div className="flex items-center gap-4 mb-6">
+        <Link
+          href="/admin"
+          className="flex items-center gap-2 text-sm text-neutral-600 hover:text-neutral-900 transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back to Admin
+        </Link>
+      </div>
+
       <header className="flex items-center justify-between">
         <div>
           <h1 className="text-xs font-medium uppercase tracking-[0.25em] text-neutral-500">

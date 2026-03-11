@@ -41,14 +41,16 @@ export function Navigation() {
     >
       <nav className="mx-auto flex max-w-[1400px] items-center justify-between px-6 py-5 lg:px-12">
         <div className="flex items-center">
-          <img
-            src="/images/logo.svg"
-            alt="PSHKRV"
-            className={cn(
-              "h-8 w-auto transition-colors duration-500",
-              isTransparent ? "brightness-0 invert" : "brightness-0"
-            )}
-          />
+          <Link href="/">
+            <img
+              src="/images/logo.svg"
+              alt="PSHKRV"
+              className={cn(
+                "h-8 w-auto transition-colors duration-500",
+                isTransparent ? "brightness-0 invert" : "brightness-0"
+              )}
+            />
+          </Link>
         </div>
 
         {/* Desktop nav */}

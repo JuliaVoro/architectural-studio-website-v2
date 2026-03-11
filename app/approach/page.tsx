@@ -128,27 +128,27 @@ export default function ApproachPage() {
         <div className="mt-16 md:mt-32 border-t border-border pt-12 md:pt-20">
           <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-20">
             <div className="lg:col-span-7">
-              <p className="font-serif text-3xl leading-[1.2] tracking-tight text-foreground md:text-4xl lg:text-5xl text-balance mb-8">
+              <p className="font-serif text-2xl leading-[1.4] tracking-tight text-foreground md:text-3xl lg:text-4xl text-balance mb-8">
                 How I Work
               </p>
               <div className="space-y-8">
-                <p className="text-lg leading-relaxed text-muted-foreground">
+                <p className="text-base leading-relaxed text-muted-foreground">
                   Every project begins by understanding the broader ecosystem in which it exists: people, technologies, organizational processes, and physical environments.
                 </p>
-                <p className="text-lg leading-relaxed text-muted-foreground">
+                <p className="text-base leading-relaxed text-muted-foreground">
                   Through research and collaboration, hidden patterns and opportunities emerge. These insights guide the development of strategies and design concepts that connect human needs with business goals.
                 </p>
-                <p className="text-lg leading-relaxed text-muted-foreground">
+                <p className="text-base leading-relaxed text-muted-foreground">
                   The process is iterative, collaborative, and grounded in real contexts, ensuring that ideas evolve into solutions that are both meaningful for people and viable for organizations.
                 </p>
               </div>
             </div>
             <div className="lg:col-span-5 lg:col-start-8">
               <div className="lg:mt-16 space-y-8">
-                <p className="text-lg leading-relaxed text-muted-foreground">
+                <p className="text-base leading-relaxed text-muted-foreground">
                   My work focuses on transforming fragmented interactions into integrated experiences. By connecting research, strategy, digital design, and spatial thinking, I help organizations shape systems that work seamlessly across touchpoints.
                 </p>
-                <p className="text-lg leading-relaxed text-muted-foreground">
+                <p className="text-base leading-relaxed text-muted-foreground">
                   Rather than designing individual artifacts, the goal is to design how people move through experiences — how they discover, understand, and engage with services and environments.
                 </p>
               </div>

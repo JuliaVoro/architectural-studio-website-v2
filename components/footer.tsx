@@ -7,11 +7,8 @@ export function Footer() {
         <div className="grid grid-cols-1 gap-12 md:grid-cols-12">
           {/* Brand */}
           <div className="md:col-span-4">
-            <Link href="/" className="font-serif text-lg tracking-tight text-foreground">
-              PSHKRV
-            </Link>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-muted-foreground">
-              PSHKRV. Designing spatial-service systems
+              Designing spatial-service systems
               that perform.
             </p>
           </div>
@@ -50,7 +47,7 @@ export function Footer() {
                   rel="noopener noreferrer"
                   className="text-sm text-foreground transition-colors duration-300 hover:text-muted-foreground"
                 >
-                  /pshkrv
+                  in/pshkrv
                 </a>
               </li>
               <li>

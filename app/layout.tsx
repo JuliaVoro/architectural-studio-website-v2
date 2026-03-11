@@ -20,8 +20,25 @@ export const metadata: Metadata = {
     default: "PSHKRV",
     template: "%s | PSHKRV",
   },
-  description:
-    "We design spatial-service systems that align business strategy, operational performance, and human experience.",
+  description: "Designing spatial-service systems that perform.",
+  openGraph: {
+    title: "PSHKRV",
+    description: "Designing spatial-service systems that perform.",
+    images: [
+      {
+        url: "/images/photo.png",
+        width: 1200,
+        height: 630,
+        alt: "PSHKRV - Designing spatial-service systems",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "PSHKRV",
+    description: "Designing spatial-service systems that perform.",
+    images: ["/images/photo.png"],
+  },
 };
 
 export const viewport: Viewport = {

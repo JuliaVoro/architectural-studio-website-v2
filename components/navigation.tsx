@@ -40,10 +40,7 @@ export function Navigation() {
       )}
     >
       <nav className="mx-auto flex max-w-[1400px] items-center justify-between px-6 py-5 lg:px-12">
-        <Link
-          href="/"
-          className="flex items-center"
-        >
+        <div className="flex items-center">
           <img
             src="/images/logo.svg"
             alt="PSHKRV"
@@ -52,7 +49,7 @@ export function Navigation() {
               isTransparent ? "brightness-0 invert" : "brightness-0"
             )}
           />
-        </Link>
+        </div>
 
         {/* Desktop nav */}
         <ul className="hidden items-center gap-8 md:flex">

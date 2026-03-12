@@ -58,7 +58,7 @@ export default function ContactPage() {
               </div>
               <div className="border-t border-border pt-8">
                 <p className="text-sm leading-relaxed text-muted-foreground">
-                  We work with organizations that understand design as a
+                  Working with organizations that understand design as a
                   strategic investment, not a cosmetic exercise. If that
                   describes your context, we should talk.
                 </p>
